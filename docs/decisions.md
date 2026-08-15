@@ -1,5 +1,24 @@
 # Decisões técnicas — LearnDeck
 
+## 2026-08-14 — Instalador NSIS falha sem "Modo de desenvolvedor" do Windows
+
+**Contexto:** `npm run dist` empacota o app corretamente (`dist\win-unpacked\LearnDeck.exe`
+funciona), mas a etapa final que gera o instalador único (`Setup.exe` via NSIS) falha ao
+extrair uma dependência interna do `electron-builder` (`winCodeSign`), porque esse pacote
+contém symlinks (arquivos `.dylib` do macOS, irrelevantes para o build Windows) e a conta do
+Windows usada não tem o privilégio `SeCreateSymbolicLinkPrivilege` — que só é concedido a
+processos elevados (admin) ou quando o **Modo de desenvolvedor** do Windows está ativado.
+
+**Situação atual:** o app funciona perfeitamente como pasta portátil
+(`dist\win-unpacked\LearnDeck.exe` + arquivos ao lado) — pode ser zipada e rodada em qualquer
+Windows x64 sem instalação. Falta apenas o passo de empacotar isso em um único `Setup.exe`.
+
+**Como resolver (ação do usuário, não automatizável sem privilégio elevado):** ativar
+**Configurações → Privacidade e segurança → Para desenvolvedores → Modo de desenvolvedor**
+(pede confirmação de administrador), depois rodar `npm run dist` de novo. Alternativa: rodar o
+terminal "Como administrador" uma única vez para esse comando. Nenhuma mudança de código é
+necessária — é puramente uma permissão do Windows.
+
 ## 2026-08-14 — `postinstall` roda `electron-builder install-app-deps`
 
 **Contexto:** ao rodar o app pela primeira vez, `better-sqlite3` (módulo nativo, compilado em
