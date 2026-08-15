@@ -39,6 +39,7 @@ const api = {
   },
   cards: {
     listByGroup: (groupId: string): Promise<Card[]> => ipcRenderer.invoke('cards:listByGroup', groupId),
+    get: (id: string): Promise<Card | undefined> => ipcRenderer.invoke('cards:get', id),
     create: (input: CreateCardInput): Promise<Card> => ipcRenderer.invoke('cards:create', input),
     update: (id: string, patch: UpdateCardInput): Promise<Card> =>
       ipcRenderer.invoke('cards:update', id, patch),

@@ -464,7 +464,324 @@ select {
   color: var(--text-muted);
 }
 
-/* ---- Modal de detalhe do card (uso pontual, ex.: confirmações) ---- */
+/* ---- Tela cheia de detalhe do card ---- */
+
+.card-page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 1.4rem 1.8rem 2rem;
+}
+
+.card-page__header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.4rem;
+}
+
+.card-page__heading {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.card-page__heading h1 {
+  margin: 0;
+  font-size: 1.4rem;
+}
+
+.card-page__meta {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+}
+
+.card-page__body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 340px);
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.card-page__main,
+.card-page__aside {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.card-section {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1rem 1.1rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.card-section h3 {
+  margin: 0 0 0.6rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.card-section select {
+  background: var(--bg-elevated-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.35rem 0.55rem;
+}
+
+.card-section__textarea {
+  width: 100%;
+  background: var(--bg-elevated-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.6rem;
+  resize: vertical;
+  margin-bottom: 0.5rem;
+}
+
+@media (max-width: 860px) {
+  .card-page__body {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---- Cronômetro ---- */
+
+.timer-widget {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  text-align: center;
+}
+
+.timer-widget__display {
+  font-size: 2rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent-strong);
+}
+
+.timer-widget__actions {
+  margin-top: 0.3rem;
+}
+
+/* ---- Pomodoro ---- */
+
+.pomodoro-widget {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  text-align: center;
+}
+
+.pomodoro-widget__phase {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.pomodoro-widget__display {
+  font-size: 2rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent-strong);
+}
+
+.pomodoro-widget__cycle-dots {
+  display: flex;
+  gap: 0.3rem;
+}
+
+.pomodoro-widget__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--bg-elevated-2);
+  border: 1px solid var(--border);
+}
+
+.pomodoro-widget__dot--filled {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.pomodoro-widget__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  align-items: center;
+  margin-top: 0.2rem;
+}
+
+.pomodoro-config-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+  margin-top: 0.5rem;
+  text-align: left;
+}
+
+.pomodoro-config-form label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  gap: 0.5rem;
+}
+
+.pomodoro-config-form input {
+  width: 70px;
+  background: var(--bg-elevated-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.25rem 0.45rem;
+  text-align: right;
+}
+
+/* ---- Sessões de estudo ---- */
+
+.session-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.session-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  font-size: 0.85rem;
+  border-left: 2px solid var(--ok);
+  padding: 0.15rem 0 0.15rem 0.6rem;
+}
+
+.session-item__meta {
+  color: var(--text-muted);
+  font-size: 0.72rem;
+}
+
+/* ---- Cards relacionados ---- */
+
+.relation-list {
+  list-style: none;
+  margin: 0 0 0.7rem;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.relation-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  background: var(--bg-elevated-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.4rem 0.6rem;
+}
+
+.relation-item__type {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.relation-item__title {
+  background: none;
+  border: none;
+  color: var(--accent-strong);
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+  margin-right: 0.4rem;
+}
+
+.relation-item__title:hover {
+  text-decoration: underline;
+}
+
+.relation-search {
+  position: relative;
+  display: flex;
+  gap: 0.35rem;
+}
+
+.relation-search select {
+  background: var(--bg-elevated-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.35rem 0.4rem;
+  font-size: 0.78rem;
+}
+
+.relation-search input {
+  flex: 1;
+  background: var(--bg-elevated-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.35rem 0.5rem;
+}
+
+.relation-search__results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 0.3rem;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md);
+  list-style: none;
+  padding: 0.3rem;
+  z-index: 5;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.relation-search__results button {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 0.4rem 0.5rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 0.82rem;
+  color: var(--text);
+}
+
+.relation-search__results button:hover {
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
+/* ---- Modal (uso pontual, ex.: confirmações) ---- */
 
 .modal-overlay {
   position: fixed;

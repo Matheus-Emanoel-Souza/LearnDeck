@@ -4,7 +4,7 @@ import { buildGroupTree } from '../lib/groupTree'
 import { reorderCards } from '../lib/kanban'
 import GroupSidebar from '../components/GroupSidebar'
 import KanbanBoard from '../components/KanbanBoard'
-import CardDetailModal from '../components/CardDetailModal'
+import CardDetailPage from './CardDetailPage'
 
 interface StudyPanelProps {
   workspaceId: string
@@ -20,7 +20,7 @@ export default function StudyPanel({ workspaceId }: StudyPanelProps): JSX.Elemen
   const [cards, setCards] = useState<Card[]>([])
   const [loadingCards, setLoadingCards] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [openCardId, setOpenCardId] = useState<string | null>(null)
+  const [viewingCard, setViewingCard] = useState<Card | null>(null)
 
   const tree = useMemo(() => buildGroupTree(groups), [groups])
 
@@ -102,8 +102,34 @@ export default function StudyPanel({ workspaceId }: StudyPanelProps): JSX.Elemen
     }
   }
 
+  async function handleNavigateToCard(cardId: string): Promise<void> {
+    try {
+      const target = await window.api.cards.get(cardId)
+      if (target) setViewingCard(target)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err))
+    }
+  }
+
+  function handleBackFromCard(): void {
+    setViewingCard(null)
+    // O card pode ter mudado de status/posição, ou a relação pode ter sido
+    // editada; recarrega do banco em vez de tentar reconciliar em memória.
+    if (selectedGroupId) reloadCards(selectedGroupId).catch(() => undefined)
+  }
+
   const selectedGroup = groups.find((g) => g.id === selectedGroupId) ?? null
-  const openCard = cards.find((c) => c.id === openCardId) ?? null
+
+  if (viewingCard) {
+    return (
+      <CardDetailPage
+        card={viewingCard}
+        workspaceId={workspaceId}
+        onBack={handleBackFromCard}
+        onNavigateToCard={(cardId) => void handleNavigateToCard(cardId)}
+      />
+    )
+  }
 
   return (
     <div className="study-panel">
@@ -134,22 +160,12 @@ export default function StudyPanel({ workspaceId }: StudyPanelProps): JSX.Elemen
                 cards={cards}
                 onMoveCard={handleMoveCard}
                 onCreateCard={handleCreateCard}
-                onOpenCard={(card) => setOpenCardId(card.id)}
+                onOpenCard={setViewingCard}
               />
             )}
           </>
         )}
       </section>
-
-      {openCard && (
-        <CardDetailModal
-          card={openCard}
-          onClose={() => setOpenCardId(null)}
-          onCardUpdated={(updated) =>
-            setCards((prev) => prev.map((c) => (c.id === updated.id ? updated : c)))
-          }
-        />
-      )}
     </div>
   )
 }
