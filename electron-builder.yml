@@ -6,6 +6,7 @@ directories:
 files:
   - out/**/*
   - package.json
+icon: build/icon.png
 win:
   target: nsis
   artifactName: ${productName}-Setup-${version}.${ext}
