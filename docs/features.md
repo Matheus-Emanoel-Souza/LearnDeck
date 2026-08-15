@@ -5,14 +5,16 @@ em alto nível.
 
 ## Implementadas
 
-_(nenhuma ainda — projeto em fase de fundação, ver Fase 0 do roadmap)_
+- Grupos hierárquicos (matérias/projetos, subgrupos ilimitados)
+- Criação de cards (título + descrição opcional) dentro de um grupo
+- Troca de status do card (Backlog, A estudar, Estudando, Pausado, Revisar, Concluído) via seletor
+- Histórico de mudanças de status por card (gravado automaticamente, ainda sem tela de visualização)
 
 ## Pendentes (MVP)
 
-- Grupos hierárquicos (matérias/projetos, ex.: `Faculdade > Cálculo > Integrais`)
-- Cards de estudo com título, descrição, status, tags, comentários
-- Quadro Kanban com colunas: Backlog, A estudar, Estudando, Pausado, Revisar, Concluído
-- Histórico de mudanças de status por card
+- Quadro Kanban visual com colunas e drag-and-drop (hoje a troca de status é por um seletor, não arrastando)
+- Edição de descrição/tags/comentários de um card já criado
+- Tela de detalhe do card (descrição, comentários, histórico, sessões, relacionamentos)
 - Cronômetro individual por card (sessões de estudo com início/fim/duração)
 - Pomodoro configurável, vinculado ao card
 - Relacionamentos entre cards (pré-requisito, bloqueia, relacionado, parte de)

@@ -17,13 +17,13 @@ Marcado como funcionalidade implementada apenas depois de rodar e ser validada.
 - [x] Janela principal abre e mostra uma tela placeholder ("LearnDeck" + versão + workspace carregado do SQLite)
 - [x] Commit: *"chore: scaffold do projeto Electron+React+TS+SQLite"*
 
-## Fase 1 — Grupos e Cards (CRUD básico, sem Kanban visual ainda)
+## Fase 1 — Grupos e Cards (CRUD básico, sem Kanban visual ainda) ✅
 
-- [ ] Repositório + service de `Group` (criar, listar em árvore, editar, soft-delete)
-- [ ] Repositório + service de `Card` (criar, listar por grupo, editar, soft-delete)
-- [ ] IPC + API tipada (`window.api.groups.*`, `window.api.cards.*`)
-- [ ] Tela simples listando grupos e cards (sem colunas ainda) para validar a camada de dados
-- [ ] Commit: *"feat: CRUD de grupos e cards"*
+- [x] Repositório + service de `Group` (criar, listar em árvore, editar, soft-delete)
+- [x] Repositório + service de `Card` (criar, listar por grupo, editar, soft-delete)
+- [x] IPC + API tipada (`window.api.groups.*`, `window.api.cards.*`)
+- [x] Tela simples listando grupos e cards (sem colunas ainda) para validar a camada de dados
+- [x] Commit: *"feat: painel inicial de grupos e cards (CRUD básico)"*
 
 ## Fase 2 — Kanban
 
