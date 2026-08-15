@@ -16,6 +16,13 @@ export function formatDurationLong(totalSeconds: number): string {
   return `${hours}h ${String(minutes).padStart(2, '0')}min`
 }
 
+/** 'YYYY-MM-DD' -> abreviação do dia da semana em pt-BR ("seg", "ter", ...). */
+export function formatWeekdayShort(isoDate: string): string {
+  const [year, month, day] = isoDate.split('-').map(Number)
+  const date = new Date(year, month - 1, day)
+  return date.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', '')
+}
+
 /** Segundos -> "MM:SS" ou "H:MM:SS", para cronômetro/Pomodoro em tempo real. */
 export function formatClock(totalSeconds: number): string {
   const seconds = Math.max(0, Math.round(totalSeconds))

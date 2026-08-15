@@ -968,6 +968,91 @@ select {
   font-variant-numeric: tabular-nums;
 }
 
+.dashboard-charts-row {
+  display: flex;
+  gap: 1.1rem;
+  flex-wrap: wrap;
+  align-items: stretch;
+}
+
+.dashboard-charts-row > .card-section {
+  flex: 1 1 320px;
+  min-width: 0;
+}
+
+/* ---- Gráfico de pizza (cards abertos por matéria) ---- */
+
+.pie-chart-row {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  flex-wrap: wrap;
+}
+
+.pie-chart {
+  width: 140px;
+  height: 140px;
+  flex-shrink: 0;
+}
+
+.pie-chart path,
+.pie-chart circle {
+  cursor: default;
+  transition: opacity 0.15s ease;
+}
+
+.pie-chart path:hover,
+.pie-chart circle:hover {
+  opacity: 0.85;
+}
+
+.chart-legend--column {
+  flex-direction: column;
+  gap: 0.4rem;
+  flex: 1 1 auto;
+}
+
+/* ---- Gráfico de linha (cards abertos ao longo da semana) ---- */
+
+.line-chart {
+  width: 100%;
+  height: auto;
+}
+
+.line-chart__axis {
+  stroke: var(--border);
+  stroke-width: 1;
+}
+
+.line-chart__line {
+  fill: none;
+  stroke: #2a78d6;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.line-chart__dot {
+  fill: #2a78d6;
+  stroke: var(--bg-elevated);
+  stroke-width: 2;
+}
+
+.line-chart__dot:hover {
+  fill: var(--accent-strong);
+}
+
+.line-chart__day-label {
+  font-size: 6.5px;
+  fill: var(--text-muted);
+}
+
+.line-chart__value-label {
+  font-size: 7.5px;
+  font-weight: 700;
+  fill: var(--text);
+}
+
 /* ---- Modal (uso pontual, ex.: confirmações) ---- */
 
 .modal-overlay {

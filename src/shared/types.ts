@@ -191,6 +191,19 @@ export interface CreateCardRelationInput {
   relationType: CardRelationType
 }
 
+/** Cards abertos (status != done) de uma matéria (grupo raiz) — gráfico de pizza do dashboard. */
+export interface SubjectOpenCount {
+  groupId: string
+  groupName: string
+  openCount: number
+}
+
+/** Cards criados em um dia — ponto do gráfico de linha "cards abertos ao longo da semana". */
+export interface DailyCardCount {
+  date: string
+  count: number
+}
+
 /** Agregados do workspace inteiro para o dashboard. */
 export interface DashboardSummary {
   totalCards: number
@@ -200,4 +213,6 @@ export interface DashboardSummary {
   byStatus: Record<CardStatus, number>
   totalStudySeconds: number
   totalPomodoros: number
+  openCardsBySubject: SubjectOpenCount[]
+  cardsOpenedByDay: DailyCardCount[]
 }

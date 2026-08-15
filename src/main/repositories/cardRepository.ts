@@ -196,6 +196,52 @@ export function listCardsForWorkspace(db: Database.Database, workspaceId: string
   return rows.map(toCard)
 }
 
+/** Cards abertos (status != done) agrupados pela matéria (grupo raiz) — gráfico de pizza do dashboard. */
+export function countOpenCardsBySubject(
+  db: Database.Database,
+  workspaceId: string
+): Array<{ groupId: string; groupName: string; openCount: number }> {
+  const rows = db
+    .prepare(
+      `WITH RECURSIVE group_roots(id, root_id) AS (
+         SELECT id, id FROM groups WHERE workspace_id = @workspaceId AND parent_group_id IS NULL
+         UNION ALL
+         SELECT g.id, gr.root_id
+         FROM groups g
+         JOIN group_roots gr ON g.parent_group_id = gr.id
+       )
+       SELECT gr.root_id AS group_id, root.name AS group_name, COUNT(c.id) AS open_count
+       FROM group_roots gr
+       JOIN groups root ON root.id = gr.root_id
+       JOIN cards c ON c.group_id = gr.id AND c.deleted_at IS NULL AND c.status != 'done'
+       GROUP BY gr.root_id, root.name
+       ORDER BY root.name ASC`
+    )
+    .all({ workspaceId }) as Array<{ group_id: string; group_name: string; open_count: number }>
+
+  return rows.map((row) => ({ groupId: row.group_id, groupName: row.group_name, openCount: row.open_count }))
+}
+
+/** Cards criados por dia, nos últimos `days` dias — gráfico de linha do dashboard. */
+export function countCardsCreatedByDay(
+  db: Database.Database,
+  workspaceId: string,
+  days: number
+): Array<{ date: string; count: number }> {
+  const rows = db
+    .prepare(
+      `SELECT date(c.created_at) AS day, COUNT(*) AS count
+       FROM cards c
+       JOIN groups g ON g.id = c.group_id
+       WHERE g.workspace_id = @workspaceId AND c.deleted_at IS NULL
+         AND date(c.created_at) >= date('now', @offset)
+       GROUP BY day`
+    )
+    .all({ workspaceId, offset: `-${days - 1} days` }) as Array<{ day: string; count: number }>
+
+  return rows.map((row) => ({ date: row.day, count: row.count }))
+}
+
 export function insertStatusHistory(
   db: Database.Database,
   cardId: string,
