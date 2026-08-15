@@ -2,14 +2,23 @@ import { contextBridge, ipcRenderer } from 'electron'
 import type { AppInfo } from '../main/ipc/app'
 import type {
   Card,
+  CardRelation,
+  CardRelationView,
+  CardSummary,
   Comment,
   CreateCardInput,
+  CreateCardRelationInput,
   CreateGroupInput,
   Group,
+  Pomodoro,
+  PomodoroConfig,
+  PomodoroKind,
   StatusHistoryEntry,
+  StudySession,
   Tag,
   UpdateCardInput,
-  UpdateGroupInput
+  UpdateGroupInput,
+  UpdatePomodoroConfigInput
 } from '@shared/types'
 
 /**
@@ -33,7 +42,9 @@ const api = {
     create: (input: CreateCardInput): Promise<Card> => ipcRenderer.invoke('cards:create', input),
     update: (id: string, patch: UpdateCardInput): Promise<Card> =>
       ipcRenderer.invoke('cards:update', id, patch),
-    delete: (id: string): Promise<void> => ipcRenderer.invoke('cards:delete', id)
+    delete: (id: string): Promise<void> => ipcRenderer.invoke('cards:delete', id),
+    search: (workspaceId: string, query: string, excludeCardId: string): Promise<CardSummary[]> =>
+      ipcRenderer.invoke('cards:search', workspaceId, query, excludeCardId)
   },
   comments: {
     listByCard: (cardId: string): Promise<Comment[]> => ipcRenderer.invoke('comments:listByCard', cardId),
@@ -51,6 +62,34 @@ const api = {
   history: {
     listByCard: (cardId: string): Promise<StatusHistoryEntry[]> =>
       ipcRenderer.invoke('history:listByCard', cardId)
+  },
+  timer: {
+    getRunning: (cardId: string): Promise<StudySession | undefined> =>
+      ipcRenderer.invoke('timer:getRunning', cardId),
+    start: (cardId: string): Promise<StudySession> => ipcRenderer.invoke('timer:start', cardId),
+    stop: (cardId: string): Promise<{ session: StudySession; card: Card }> =>
+      ipcRenderer.invoke('timer:stop', cardId),
+    listByCard: (cardId: string): Promise<StudySession[]> =>
+      ipcRenderer.invoke('timer:listByCard', cardId)
+  },
+  pomodoro: {
+    getConfig: (cardId: string): Promise<PomodoroConfig> => ipcRenderer.invoke('pomodoro:getConfig', cardId),
+    updateConfig: (patch: UpdatePomodoroConfigInput): Promise<PomodoroConfig> =>
+      ipcRenderer.invoke('pomodoro:updateConfig', patch),
+    getOpenCycle: (cardId: string): Promise<Pomodoro | undefined> =>
+      ipcRenderer.invoke('pomodoro:getOpenCycle', cardId),
+    startCycle: (cardId: string, kind: PomodoroKind): Promise<Pomodoro> =>
+      ipcRenderer.invoke('pomodoro:startCycle', cardId, kind),
+    finishCycle: (cardId: string, pomodoroId: string, completed: boolean): Promise<Pomodoro> =>
+      ipcRenderer.invoke('pomodoro:finishCycle', cardId, pomodoroId, completed),
+    listByCard: (cardId: string): Promise<Pomodoro[]> => ipcRenderer.invoke('pomodoro:listByCard', cardId)
+  },
+  relations: {
+    listByCard: (cardId: string): Promise<CardRelationView[]> =>
+      ipcRenderer.invoke('relations:listByCard', cardId),
+    create: (input: CreateCardRelationInput): Promise<CardRelation> =>
+      ipcRenderer.invoke('relations:create', input),
+    delete: (id: string): Promise<void> => ipcRenderer.invoke('relations:delete', id)
   }
 }
 

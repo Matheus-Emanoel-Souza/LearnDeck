@@ -1,6 +1,6 @@
 import type Database from 'better-sqlite3'
 import { randomUUID } from 'node:crypto'
-import type { Card, CardStatus, CreateCardInput, UpdateCardInput } from '@shared/types'
+import type { Card, CardStatus, CardSummary, CreateCardInput, UpdateCardInput } from '@shared/types'
 
 interface CardRow {
   id: string
@@ -118,6 +118,59 @@ export function updateCardRow(db: Database.Database, id: string, patch: UpdateCa
 
 export function softDeleteCard(db: Database.Database, id: string): void {
   db.prepare('UPDATE cards SET deleted_at = ? WHERE id = ?').run(new Date().toISOString(), id)
+}
+
+/** Recalcula o total_study_seconds desnormalizado do card a partir das sessões fechadas. */
+export function setCardTotalStudySeconds(db: Database.Database, cardId: string, totalSeconds: number): void {
+  db.prepare('UPDATE cards SET total_study_seconds = ?, updated_at = ? WHERE id = ?').run(
+    totalSeconds,
+    new Date().toISOString(),
+    cardId
+  )
+}
+
+export function incrementCardPomodorosCompleted(db: Database.Database, cardId: string): void {
+  db.prepare(
+    'UPDATE cards SET pomodoros_completed = pomodoros_completed + 1, updated_at = ? WHERE id = ?'
+  ).run(new Date().toISOString(), cardId)
+}
+
+/** Busca cards do workspace inteiro por título (para relacionar cards entre grupos diferentes). */
+export function searchCardsInWorkspace(
+  db: Database.Database,
+  workspaceId: string,
+  query: string,
+  excludeCardId: string
+): CardSummary[] {
+  const rows = db
+    .prepare(
+      `SELECT c.id, c.group_id, c.title, c.status FROM cards c
+       JOIN groups g ON g.id = c.group_id
+       WHERE g.workspace_id = ? AND c.deleted_at IS NULL AND c.id != ?
+         AND c.title LIKE ? ESCAPE '\\'
+       ORDER BY c.title ASC
+       LIMIT 20`
+    )
+    .all(workspaceId, excludeCardId, `%${query.replace(/[%_\\]/g, '\\$&')}%`) as Array<{
+    id: string
+    group_id: string
+    title: string
+    status: CardStatus
+  }>
+
+  return rows.map((row) => ({ id: row.id, groupId: row.group_id, title: row.title, status: row.status }))
+}
+
+/** Todos os cards não excluídos de um workspace (usado pelo dashboard para contagens/agregações). */
+export function listCardsForWorkspace(db: Database.Database, workspaceId: string): Card[] {
+  const rows = db
+    .prepare(
+      `SELECT c.* FROM cards c
+       JOIN groups g ON g.id = c.group_id
+       WHERE g.workspace_id = ? AND c.deleted_at IS NULL`
+    )
+    .all(workspaceId) as CardRow[]
+  return rows.map(toCard)
 }
 
 export function insertStatusHistory(

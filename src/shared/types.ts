@@ -110,12 +110,43 @@ export interface Pomodoro {
 
 export type CardRelationType = 'prerequisite_of' | 'blocks' | 'related_to' | 'part_of'
 
+export const CARD_RELATION_TYPES: CardRelationType[] = [
+  'prerequisite_of',
+  'blocks',
+  'related_to',
+  'part_of'
+]
+
+export const CARD_RELATION_TYPE_LABELS: Record<CardRelationType, string> = {
+  prerequisite_of: 'é pré-requisito de',
+  blocks: 'bloqueia',
+  related_to: 'relacionado a',
+  part_of: 'faz parte de'
+}
+
 export interface CardRelation {
   id: string
   cardId: string
   relatedCardId: string
   relationType: CardRelationType
   createdAt: string
+}
+
+/** Resumo leve de um card, usado em buscas e listas de relacionamento. */
+export interface CardSummary {
+  id: string
+  groupId: string
+  title: string
+  status: CardStatus
+}
+
+/** Uma relação já resolvida com os dados do card do outro lado, pronta para exibir. */
+export interface CardRelationView {
+  id: string
+  relationType: CardRelationType
+  direction: 'outgoing' | 'incoming'
+  createdAt: string
+  card: CardSummary
 }
 
 // ---- DTOs de entrada usados via IPC (renderer -> main) ----
@@ -145,4 +176,17 @@ export interface UpdateCardInput {
   description?: string | null
   status?: CardStatus
   position?: number
+}
+
+export interface UpdatePomodoroConfigInput {
+  focusMinutes: number
+  shortBreakMinutes: number
+  longBreakMinutes: number
+  cyclesBeforeLongBreak: number
+}
+
+export interface CreateCardRelationInput {
+  cardId: string
+  relatedCardId: string
+  relationType: CardRelationType
 }

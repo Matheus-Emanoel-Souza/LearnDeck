@@ -8,6 +8,9 @@ import { registerCardsIpc } from './ipc/cards'
 import { registerCommentsIpc } from './ipc/comments'
 import { registerTagsIpc } from './ipc/tags'
 import { registerHistoryIpc } from './ipc/history'
+import { registerTimerIpc } from './ipc/timer'
+import { registerPomodoroIpc } from './ipc/pomodoro'
+import { registerRelationsIpc } from './ipc/relations'
 
 const isDev = !app.isPackaged
 
@@ -51,6 +54,9 @@ app.whenReady().then(() => {
   registerCommentsIpc(db)
   registerTagsIpc(db)
   registerHistoryIpc(db)
+  registerTimerIpc(db)
+  registerPomodoroIpc(db)
+  registerRelationsIpc(db)
 
   createMainWindow()
 
