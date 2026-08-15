@@ -443,6 +443,13 @@ select {
   gap: 0.4rem;
 }
 
+.kanban-card__title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
 .kanban-card__header h4 {
   margin: 0;
   font-size: 0.86rem;
@@ -487,6 +494,13 @@ select {
   display: flex;
   flex-direction: column;
   gap: 0.15rem;
+}
+
+.card-page__title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
 }
 
 .card-page__heading h1 {
@@ -790,6 +804,41 @@ select {
 .relation-picker__list button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* ---- ID visível do card ---- */
+
+.card-id-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.68rem;
+  font-family: 'Consolas', 'SFMono-Regular', Menlo, monospace;
+  color: var(--text-muted);
+  background: var(--bg-elevated-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.05rem 0.35rem 0.05rem 0.55rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.card-id-badge__value {
+  letter-spacing: 0.01em;
+}
+
+.card-id-badge__copy {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  line-height: 1;
+  padding: 0.15rem 0.2rem;
+}
+
+.card-id-badge__copy:hover {
+  color: var(--accent-strong);
 }
 
 /* ---- Dashboard ---- */

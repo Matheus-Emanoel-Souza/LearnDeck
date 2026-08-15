@@ -16,6 +16,7 @@ import CardTimer from '../components/CardTimer'
 import CardPomodoro from '../components/CardPomodoro'
 import CardSessions from '../components/CardSessions'
 import CardRelations from '../components/CardRelations'
+import CardIdBadge from '../components/CardIdBadge'
 
 interface CardDetailPageProps {
   card: Card
@@ -168,7 +169,10 @@ export default function CardDetailPage({
           ← Voltar ao quadro
         </button>
         <div className="card-page__heading">
-          <h1>{card.title}</h1>
+          <div className="card-page__title-row">
+            <h1>{card.title}</h1>
+            <CardIdBadge id={card.id} />
+          </div>
           <span className="card-page__meta">Criado em {formatDateTime(card.createdAt)}</span>
         </div>
         <StatusBadge status={card.status} />

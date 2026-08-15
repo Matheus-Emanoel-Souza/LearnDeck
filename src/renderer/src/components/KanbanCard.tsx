@@ -1,5 +1,6 @@
 import type { Card } from '@shared/types'
 import StatusBadge from './StatusBadge'
+import CardIdBadge from './CardIdBadge'
 
 interface KanbanCardProps {
   card: Card
@@ -36,7 +37,10 @@ export default function KanbanCard({
       }}
     >
       <div className="kanban-card__header">
-        <h4>{card.title}</h4>
+        <div className="kanban-card__title-group">
+          <h4>{card.title}</h4>
+          <CardIdBadge id={card.id} />
+        </div>
         <StatusBadge status={card.status} />
       </div>
 
