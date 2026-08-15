@@ -191,6 +191,20 @@ export interface CreateCardRelationInput {
   relationType: CardRelationType
 }
 
+/**
+ * Estado da checagem/atualização do app (electron-updater), espelhado do main
+ * pro renderer via IPC — ver src/main/updater.ts e a tela de Configurações.
+ */
+export type UpdateStatus =
+  | { state: 'idle' }
+  | { state: 'unsupported' }
+  | { state: 'checking' }
+  | { state: 'up-to-date'; version: string }
+  | { state: 'available'; version: string }
+  | { state: 'downloading'; version: string; percent: number }
+  | { state: 'downloaded'; version: string }
+  | { state: 'error'; message: string }
+
 /** Cards abertos (status != done) de uma matéria (grupo raiz) — gráfico de pizza do dashboard. */
 export interface SubjectOpenCount {
   groupId: string

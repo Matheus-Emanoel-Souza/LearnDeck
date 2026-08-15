@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react'
 import type { AppInfo } from '../../main/ipc/app'
 import StudyPanel from './pages/StudyPanel'
 import Dashboard from './pages/Dashboard'
+import Settings from './pages/Settings'
 
-type Tab = 'board' | 'dashboard'
+type Tab = 'board' | 'dashboard' | 'settings'
 
 export default function App(): JSX.Element {
   const [info, setInfo] = useState<AppInfo | null>(null)
@@ -53,13 +54,23 @@ export default function App(): JSX.Element {
           >
             Dashboard
           </button>
+          <button
+            className={`app-nav__tab ${tab === 'settings' ? 'app-nav__tab--active' : ''}`}
+            onClick={() => setTab('settings')}
+          >
+            Configurações
+          </button>
         </nav>
       </header>
-      {tab === 'board' ? (
-        <StudyPanel workspaceId={info.workspace.id} />
-      ) : (
+      {tab === 'board' && <StudyPanel workspaceId={info.workspace.id} />}
+      {tab === 'dashboard' && (
         <div className="card-panel">
           <Dashboard workspaceId={info.workspace.id} />
+        </div>
+      )}
+      {tab === 'settings' && (
+        <div className="card-panel">
+          <Settings currentVersion={info.version} />
         </div>
       )}
     </div>

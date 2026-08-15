@@ -1,4 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron'
+import type { IpcRendererEvent } from 'electron'
 import type { AppInfo } from '../main/ipc/app'
 import type {
   Card,
@@ -19,7 +20,8 @@ import type {
   Tag,
   UpdateCardInput,
   UpdateGroupInput,
-  UpdatePomodoroConfigInput
+  UpdatePomodoroConfigInput,
+  UpdateStatus
 } from '@shared/types'
 
 /**
@@ -98,6 +100,18 @@ const api = {
   dashboard: {
     getSummary: (workspaceId: string): Promise<DashboardSummary> =>
       ipcRenderer.invoke('dashboard:getSummary', workspaceId)
+  },
+  updater: {
+    getStatus: (): Promise<UpdateStatus> => ipcRenderer.invoke('updater:getStatus'),
+    check: (): Promise<void> => ipcRenderer.invoke('updater:check'),
+    download: (): Promise<void> => ipcRenderer.invoke('updater:download'),
+    install: (): Promise<void> => ipcRenderer.invoke('updater:install'),
+    /** Assina atualizações de status empurradas pelo main; retorna a função de cancelar a assinatura. */
+    onStatus: (callback: (status: UpdateStatus) => void): (() => void) => {
+      const listener = (_event: IpcRendererEvent, status: UpdateStatus): void => callback(status)
+      ipcRenderer.on('updater:status', listener)
+      return () => ipcRenderer.removeListener('updater:status', listener)
+    }
   }
 }
 

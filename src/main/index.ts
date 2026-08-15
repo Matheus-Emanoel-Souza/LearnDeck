@@ -12,6 +12,7 @@ import { registerTimerIpc } from './ipc/timer'
 import { registerPomodoroIpc } from './ipc/pomodoro'
 import { registerRelationsIpc } from './ipc/relations'
 import { registerDashboardIpc } from './ipc/dashboard'
+import { registerUpdaterIpc } from './ipc/updater'
 import { initAutoUpdater } from './updater'
 
 const isDev = !app.isPackaged
@@ -60,6 +61,7 @@ app.whenReady().then(() => {
   registerPomodoroIpc(db)
   registerRelationsIpc(db)
   registerDashboardIpc(db)
+  registerUpdaterIpc()
 
   createMainWindow()
   initAutoUpdater()
