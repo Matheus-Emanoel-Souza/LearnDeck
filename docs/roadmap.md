@@ -25,13 +25,16 @@ Marcado como funcionalidade implementada apenas depois de rodar e ser validada.
 - [x] Tela simples listando grupos e cards (sem colunas ainda) para validar a camada de dados
 - [x] Commit: *"feat: painel inicial de grupos e cards (CRUD básico)"*
 
-## Fase 2 — Kanban
+## Fase 2 — Kanban ✅
 
-- [ ] Colunas fixas: Backlog, A estudar, Estudando, Pausado, Revisar, Concluído
-- [ ] Mover card entre colunas (clique/drag-and-drop)
-- [ ] Toda mudança de status grava em `status_history`
-- [ ] Reordenar cards dentro da coluna (`position`)
-- [ ] Commit: *"feat: quadro Kanban com histórico de status"*
+- [x] Colunas fixas: Backlog, A estudar, Estudando, Pausado, Revisar, Concluído
+- [x] Mover card entre colunas (drag-and-drop nativo HTML5)
+- [x] Toda mudança de status grava em `status_history` (regra já existia desde a Fase 1)
+- [x] Reordenar cards dentro da coluna (`position`, drop sobre outro card insere antes dele)
+- [x] Commit: *"feat: quadro Kanban visual com drag-and-drop entre colunas"*
+- [ ] ⚠️ Drag-and-drop testado apenas por leitura de código + typecheck; não foi possível
+      validar com um arraste de mouse real desta vez (automação de tela esbarrou em outra
+      janela do usuário). **Peça para o usuário confirmar visualmente.**
 
 ## Fase 3 — Detalhe do card
 
