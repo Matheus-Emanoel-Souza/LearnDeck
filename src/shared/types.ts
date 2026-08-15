@@ -15,6 +15,15 @@ export const CARD_STATUSES: CardStatus[] = [
   'done'
 ]
 
+export const CARD_STATUS_LABELS: Record<CardStatus, string> = {
+  backlog: 'Backlog',
+  to_study: 'A estudar',
+  studying: 'Estudando',
+  paused: 'Pausado',
+  review: 'Revisar',
+  done: 'Concluído'
+}
+
 export interface Workspace {
   id: string
   name: string
@@ -107,4 +116,33 @@ export interface CardRelation {
   relatedCardId: string
   relationType: CardRelationType
   createdAt: string
+}
+
+// ---- DTOs de entrada usados via IPC (renderer -> main) ----
+
+export interface CreateGroupInput {
+  workspaceId: string
+  parentGroupId?: string | null
+  name: string
+  color?: string | null
+}
+
+export interface UpdateGroupInput {
+  name?: string
+  color?: string | null
+  parentGroupId?: string | null
+  position?: number
+}
+
+export interface CreateCardInput {
+  groupId: string
+  title: string
+  description?: string | null
+}
+
+export interface UpdateCardInput {
+  title?: string
+  description?: string | null
+  status?: CardStatus
+  position?: number
 }

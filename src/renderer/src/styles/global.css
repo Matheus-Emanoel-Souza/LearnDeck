@@ -5,6 +5,17 @@
     system-ui,
     -apple-system,
     sans-serif;
+
+  --bg: #0f1115;
+  --bg-elevated: #171a21;
+  --bg-elevated-2: #1e222b;
+  --border: #2a2f3a;
+  --text: #e6e6e6;
+  --text-muted: #9aa0a6;
+  --accent: #5b8def;
+  --accent-strong: #4472d6;
+  --ok: #6ee7a0;
+  --error: #f2777a;
 }
 
 * {
@@ -13,9 +24,20 @@
 
 body {
   margin: 0;
-  background: #0f1115;
-  color: #e6e6e6;
+  background: var(--bg);
+  color: var(--text);
 }
+
+button,
+input,
+textarea,
+select {
+  font-family: inherit;
+  font-size: 0.875rem;
+  color: var(--text);
+}
+
+/* ---- Tela de boot (App.tsx antes do workspace carregar) ---- */
 
 .app-shell {
   height: 100vh;
@@ -32,21 +54,334 @@ body {
   margin: 0;
 }
 
-.subtitle {
-  margin: 0;
-  color: #9aa0a6;
-}
-
 .status {
   margin-top: 1.5rem;
   font-size: 0.9rem;
-  color: #9aa0a6;
+  color: var(--text-muted);
 }
 
 .status--ok {
-  color: #6ee7a0;
+  color: var(--ok);
 }
 
 .status--error {
-  color: #f2777a;
+  color: var(--error);
+}
+
+/* ---- Layout principal ---- */
+
+.app-root {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-header {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  padding: 0.75rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.app-header h1 {
+  font-size: 1.15rem;
+  margin: 0;
+}
+
+.app-header__version {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+.study-panel {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+/* ---- Sidebar de grupos ---- */
+
+.sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--border);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  overflow-y: auto;
+}
+
+.sidebar__title {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.group-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.group-tree-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.group-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 6px;
+}
+
+.group-row--active {
+  background: var(--bg-elevated-2);
+}
+
+.group-row__name {
+  flex: 1;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 0.4rem 0.4rem;
+  cursor: pointer;
+  border-radius: 6px;
+  color: var(--text);
+}
+
+.group-row__name:hover {
+  background: var(--bg-elevated);
+}
+
+.group-row__add {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0.3rem 0.6rem;
+  font-size: 0.9rem;
+}
+
+.group-row__add:hover {
+  color: var(--text);
+}
+
+/* ---- Botões e formulários ---- */
+
+.primary-button {
+  background: var(--accent);
+  color: white;
+  border: none;
+  padding: 0.5rem 0.9rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.primary-button:hover:not(:disabled) {
+  background: var(--accent-strong);
+}
+
+.primary-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.secondary-button {
+  background: var(--bg-elevated);
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 0.5rem 0.9rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.secondary-button:hover {
+  border-color: var(--accent);
+}
+
+.link-button {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0.2rem 0.4rem;
+  text-decoration: underline;
+  font-size: 0.8rem;
+}
+
+.link-button:hover {
+  color: var(--text);
+}
+
+.inline-form {
+  display: flex;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.inline-form input {
+  flex: 1;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.35rem 0.5rem;
+}
+
+.inline-form button[type='submit'] {
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 0.35rem 0.6rem;
+  cursor: pointer;
+}
+
+.empty-hint {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+/* ---- Painel de cards ---- */
+
+.card-panel {
+  flex: 1;
+  padding: 1.25rem 1.5rem;
+  overflow-y: auto;
+}
+
+.card-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.card-panel__header h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.new-card-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.75rem;
+  max-width: 420px;
+}
+
+.new-card-form input,
+.new-card-form textarea {
+  background: var(--bg-elevated-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.45rem 0.6rem;
+  resize: vertical;
+}
+
+.new-card-form__actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-top: 1rem;
+}
+
+.card-item {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+}
+
+.card-item__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.card-item__header h3 {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.card-item__description {
+  margin: 0.4rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  white-space: pre-wrap;
+}
+
+.card-item__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.6rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.card-item__status-select select {
+  margin-left: 0.4rem;
+  background: var(--bg-elevated-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.2rem 0.4rem;
+}
+
+/* ---- Badge de status ---- */
+
+.status-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  white-space: nowrap;
+  background: var(--bg-elevated-2);
+  color: var(--text-muted);
+}
+
+.status-badge--backlog {
+  background: #2a2f3a;
+  color: #9aa0a6;
+}
+
+.status-badge--to_study {
+  background: #2a3a52;
+  color: #7cb0f2;
+}
+
+.status-badge--studying {
+  background: #3a3320;
+  color: #f2c94c;
+}
+
+.status-badge--paused {
+  background: #3a2a2a;
+  color: #f2947a;
+}
+
+.status-badge--review {
+  background: #322a3a;
+  color: #c79cf2;
+}
+
+.status-badge--done {
+  background: #1f3a2a;
+  color: #6ee7a0;
 }

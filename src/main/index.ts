@@ -3,6 +3,8 @@ import path from 'node:path'
 import { getDatabase, closeDatabase } from './db/connection'
 import { runMigrations } from './db/migrate'
 import { registerAppIpc } from './ipc/app'
+import { registerGroupsIpc } from './ipc/groups'
+import { registerCardsIpc } from './ipc/cards'
 
 const isDev = !app.isPackaged
 
@@ -41,6 +43,8 @@ app.whenReady().then(() => {
   const db = getDatabase()
   runMigrations(db)
   registerAppIpc(db)
+  registerGroupsIpc(db)
+  registerCardsIpc(db)
 
   createMainWindow()
 

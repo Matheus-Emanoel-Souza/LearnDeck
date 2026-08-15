@@ -1,0 +1,158 @@
+import { useState } from 'react'
+import type { GroupNode } from '../lib/groupTree'
+
+interface GroupSidebarProps {
+  tree: GroupNode[]
+  selectedGroupId: string | null
+  onSelect: (groupId: string) => void
+  onCreateGroup: (name: string, parentGroupId: string | null) => Promise<void>
+}
+
+export default function GroupSidebar({
+  tree,
+  selectedGroupId,
+  onSelect,
+  onCreateGroup
+}: GroupSidebarProps): JSX.Element {
+  return (
+    <aside className="sidebar">
+      <h2 className="sidebar__title">Matérias &amp; projetos</h2>
+
+      <div className="group-list">
+        {tree.length === 0 && <p className="empty-hint">Nenhum grupo ainda. Crie o primeiro abaixo.</p>}
+        {tree.map((node) => (
+          <GroupTreeItem
+            key={node.id}
+            node={node}
+            depth={0}
+            selectedGroupId={selectedGroupId}
+            onSelect={onSelect}
+            onCreateGroup={onCreateGroup}
+          />
+        ))}
+      </div>
+
+      <NewGroupForm parentGroupId={null} label="+ Novo grupo raiz" onCreateGroup={onCreateGroup} />
+    </aside>
+  )
+}
+
+function GroupTreeItem({
+  node,
+  depth,
+  selectedGroupId,
+  onSelect,
+  onCreateGroup
+}: {
+  node: GroupNode
+  depth: number
+  selectedGroupId: string | null
+  onSelect: (groupId: string) => void
+  onCreateGroup: (name: string, parentGroupId: string | null) => Promise<void>
+}): JSX.Element {
+  const [showChildForm, setShowChildForm] = useState(false)
+
+  return (
+    <div className="group-tree-item">
+      <div
+        className={`group-row ${node.id === selectedGroupId ? 'group-row--active' : ''}`}
+        style={{ paddingLeft: `${depth * 16 + 8}px` }}
+      >
+        <button className="group-row__name" onClick={() => onSelect(node.id)}>
+          {node.name}
+        </button>
+        <button
+          className="group-row__add"
+          title="Adicionar subgrupo"
+          onClick={() => setShowChildForm((v) => !v)}
+        >
+          +
+        </button>
+      </div>
+
+      {showChildForm && (
+        <div style={{ paddingLeft: `${(depth + 1) * 16 + 8}px` }}>
+          <NewGroupForm
+            parentGroupId={node.id}
+            label="Adicionar subgrupo"
+            compact
+            autoOpen
+            onCreateGroup={async (name, parentGroupId) => {
+              await onCreateGroup(name, parentGroupId)
+              setShowChildForm(false)
+            }}
+          />
+        </div>
+      )}
+
+      {node.children.map((child) => (
+        <GroupTreeItem
+          key={child.id}
+          node={child}
+          depth={depth + 1}
+          selectedGroupId={selectedGroupId}
+          onSelect={onSelect}
+          onCreateGroup={onCreateGroup}
+        />
+      ))}
+    </div>
+  )
+}
+
+function NewGroupForm({
+  parentGroupId,
+  label,
+  compact,
+  autoOpen,
+  onCreateGroup
+}: {
+  parentGroupId: string | null
+  label: string
+  compact?: boolean
+  autoOpen?: boolean
+  onCreateGroup: (name: string, parentGroupId: string | null) => Promise<void>
+}): JSX.Element {
+  const [open, setOpen] = useState(Boolean(autoOpen))
+  const [name, setName] = useState('')
+  const [busy, setBusy] = useState(false)
+
+  if (!open) {
+    return (
+      <button className={compact ? 'link-button' : 'secondary-button'} onClick={() => setOpen(true)}>
+        {label}
+      </button>
+    )
+  }
+
+  return (
+    <form
+      className="inline-form"
+      onSubmit={async (e) => {
+        e.preventDefault()
+        if (!name.trim() || busy) return
+        setBusy(true)
+        try {
+          await onCreateGroup(name, parentGroupId)
+          setName('')
+          setOpen(false)
+        } finally {
+          setBusy(false)
+        }
+      }}
+    >
+      <input
+        autoFocus
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        placeholder="Nome do grupo"
+        disabled={busy}
+      />
+      <button type="submit" disabled={busy || !name.trim()}>
+        Criar
+      </button>
+      <button type="button" className="link-button" onClick={() => setOpen(false)} disabled={busy}>
+        Cancelar
+      </button>
+    </form>
+  )
+}
