@@ -8,14 +8,14 @@ Marcado como funcionalidade implementada apenas depois de rodar e ser validada.
 - [x] Concluído
 - [ ] Pendente
 
-## Fase 0 — Fundação do projeto
+## Fase 0 — Fundação do projeto ✅
 
 - [x] Documentação inicial (`docs/architecture.md`, `docs/database.md`, `docs/decisions.md`, `docs/roadmap.md`)
-- [ ] Scaffold Electron + Vite + React + TypeScript (`electron-vite`)
-- [ ] Configuração de lint/format (ESLint + Prettier)
-- [ ] Camada de banco: conexão SQLite + runner de migrations + `001_init.sql` com o schema completo
-- [ ] Janela principal abre e mostra uma tela placeholder ("LearnDeck" + versão)
-- [ ] Commit: *"chore: scaffold do projeto Electron+React+TS+SQLite"*
+- [x] Scaffold Electron + Vite + React + TypeScript (`electron-vite`)
+- [x] Configuração de lint (ESLint)
+- [x] Camada de banco: conexão SQLite + runner de migrations + `001_init.sql` com o schema completo
+- [x] Janela principal abre e mostra uma tela placeholder ("LearnDeck" + versão + workspace carregado do SQLite)
+- [x] Commit: *"chore: scaffold do projeto Electron+React+TS+SQLite"*
 
 ## Fase 1 — Grupos e Cards (CRUD básico, sem Kanban visual ainda)
 
