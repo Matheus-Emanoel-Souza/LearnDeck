@@ -32,9 +32,8 @@ Marcado como funcionalidade implementada apenas depois de rodar e ser validada.
 - [x] Toda mudança de status grava em `status_history` (regra já existia desde a Fase 1)
 - [x] Reordenar cards dentro da coluna (`position`, drop sobre outro card insere antes dele)
 - [x] Commit: *"feat: quadro Kanban visual com drag-and-drop entre colunas"*
-- [ ] ⚠️ Drag-and-drop testado apenas por leitura de código + typecheck; não foi possível
-      validar com um arraste de mouse real desta vez (automação de tela esbarrou em outra
-      janela do usuário). **Peça para o usuário confirmar visualmente.**
+- [x] Drag-and-drop confirmado pelo usuário: card movido entre colunas persiste após
+      fechar e reabrir o app
 
 ## Fase 3 — Detalhe do card
 
