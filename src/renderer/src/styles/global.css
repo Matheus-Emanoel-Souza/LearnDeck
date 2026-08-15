@@ -1,21 +1,33 @@
 :root {
-  color-scheme: light dark;
+  color-scheme: light;
   font-family:
     'Segoe UI',
     system-ui,
     -apple-system,
     sans-serif;
 
-  --bg: #0f1115;
-  --bg-elevated: #171a21;
-  --bg-elevated-2: #1e222b;
-  --border: #2a2f3a;
-  --text: #e6e6e6;
-  --text-muted: #9aa0a6;
-  --accent: #5b8def;
-  --accent-strong: #4472d6;
-  --ok: #6ee7a0;
-  --error: #f2777a;
+  /* Paleta lavanda/roxo claro — visual de app de estudos, moderno e limpo. */
+  --bg: #f4f1fb;
+  --bg-elevated: #ffffff;
+  --bg-elevated-2: #ede8fb;
+  --bg-elevated-3: #e2daf7;
+  --border: #ddd3f5;
+  --text: #2c2440;
+  --text-muted: #786e99;
+  --accent: #7c5cf2;
+  --accent-strong: #6a47e0;
+  --accent-soft: #ede7fd;
+  --ok: #22b07d;
+  --ok-soft: #dff5ec;
+  --error: #e05a6c;
+  --error-soft: #fbe4e7;
+  --warn: #dc9a2e;
+  --warn-soft: #faf0dc;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --shadow-sm: 0 1px 2px rgba(80, 56, 160, 0.06);
+  --shadow-md: 0 4px 16px rgba(80, 56, 160, 0.1);
 }
 
 * {
@@ -52,6 +64,7 @@ select {
 .app-shell h1 {
   font-size: 2rem;
   margin: 0;
+  color: var(--accent-strong);
 }
 
 .status {
@@ -80,19 +93,49 @@ select {
   display: flex;
   align-items: baseline;
   gap: 0.6rem;
-  padding: 0.75rem 1.25rem;
+  padding: 0.85rem 1.5rem;
   border-bottom: 1px solid var(--border);
+  background: var(--bg-elevated);
   flex-shrink: 0;
 }
 
 .app-header h1 {
-  font-size: 1.15rem;
+  font-size: 1.2rem;
   margin: 0;
+  color: var(--accent-strong);
+  letter-spacing: -0.01em;
 }
 
 .app-header__version {
   color: var(--text-muted);
   font-size: 0.75rem;
+}
+
+.app-nav {
+  display: flex;
+  gap: 0.3rem;
+  margin-left: 1rem;
+}
+
+.app-nav__tab {
+  background: none;
+  border: none;
+  padding: 0.4rem 0.85rem;
+  border-radius: 999px;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.app-nav__tab:hover {
+  background: var(--bg-elevated-2);
+  color: var(--text);
+}
+
+.app-nav__tab--active {
+  background: var(--accent-soft);
+  color: var(--accent-strong);
 }
 
 .study-panel {
@@ -107,7 +150,8 @@ select {
   width: 260px;
   flex-shrink: 0;
   border-right: 1px solid var(--border);
-  padding: 1rem;
+  background: var(--bg-elevated);
+  padding: 1.1rem 1rem;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
@@ -115,10 +159,11 @@ select {
 }
 
 .sidebar__title {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
   color: var(--text-muted);
+  font-weight: 700;
   margin: 0;
 }
 
@@ -137,11 +182,11 @@ select {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
 }
 
 .group-row--active {
-  background: var(--bg-elevated-2);
+  background: var(--accent-soft);
 }
 
 .group-row__name {
@@ -149,14 +194,19 @@ select {
   text-align: left;
   background: none;
   border: none;
-  padding: 0.4rem 0.4rem;
+  padding: 0.45rem 0.5rem;
   cursor: pointer;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   color: var(--text);
 }
 
+.group-row--active .group-row__name {
+  color: var(--accent-strong);
+  font-weight: 600;
+}
+
 .group-row__name:hover {
-  background: var(--bg-elevated);
+  background: var(--bg-elevated-2);
 }
 
 .group-row__add {
@@ -169,7 +219,7 @@ select {
 }
 
 .group-row__add:hover {
-  color: var(--text);
+  color: var(--accent-strong);
 }
 
 /* ---- Botões e formulários ---- */
@@ -178,10 +228,11 @@ select {
   background: var(--accent);
   color: white;
   border: none;
-  padding: 0.5rem 0.9rem;
-  border-radius: 6px;
+  padding: 0.55rem 1rem;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   font-weight: 600;
+  box-shadow: var(--shadow-sm);
 }
 
 .primary-button:hover:not(:disabled) {
@@ -197,13 +248,14 @@ select {
   background: var(--bg-elevated);
   color: var(--text);
   border: 1px solid var(--border);
-  padding: 0.5rem 0.9rem;
-  border-radius: 6px;
+  padding: 0.55rem 1rem;
+  border-radius: var(--radius-sm);
   cursor: pointer;
 }
 
 .secondary-button:hover {
   border-color: var(--accent);
+  color: var(--accent-strong);
 }
 
 .link-button {
@@ -217,7 +269,7 @@ select {
 }
 
 .link-button:hover {
-  color: var(--text);
+  color: var(--accent-strong);
 }
 
 .inline-form {
@@ -228,18 +280,18 @@ select {
 
 .inline-form input {
   flex: 1;
-  background: var(--bg-elevated);
+  background: var(--bg-elevated-2);
   border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 0.35rem 0.5rem;
+  border-radius: var(--radius-sm);
+  padding: 0.4rem 0.55rem;
 }
 
 .inline-form button[type='submit'] {
   background: var(--accent);
   color: white;
   border: none;
-  border-radius: 6px;
-  padding: 0.35rem 0.6rem;
+  border-radius: var(--radius-sm);
+  padding: 0.4rem 0.7rem;
   cursor: pointer;
 }
 
@@ -252,7 +304,7 @@ select {
 
 .card-panel {
   flex: 1;
-  padding: 1.25rem 1.5rem;
+  padding: 1.4rem 1.6rem;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -263,12 +315,13 @@ select {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 1rem;
+  margin-bottom: 1.1rem;
 }
 
 .card-panel__header h2 {
   margin: 0;
-  font-size: 1.1rem;
+  font-size: 1.15rem;
+  color: var(--text);
 }
 
 .new-card-form {
@@ -279,10 +332,10 @@ select {
 
 .new-card-form input,
 .new-card-form textarea {
-  background: var(--bg-elevated-2);
+  background: var(--bg-elevated);
   border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 0.45rem 0.6rem;
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.65rem;
   resize: vertical;
 }
 
@@ -297,73 +350,86 @@ select {
 .kanban-board {
   flex: 1;
   display: flex;
-  gap: 0.9rem;
+  gap: 1rem;
   overflow-x: auto;
   padding-bottom: 0.5rem;
   min-height: 0;
 }
 
 .kanban-column {
-  flex: 0 0 260px;
+  flex: 0 0 270px;
   display: flex;
   flex-direction: column;
-  background: var(--bg-elevated);
+  background: var(--bg-elevated-2);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   min-height: 0;
-  transition: border-color 0.15s ease, background 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
 }
 
 .kanban-column--drop-target {
   border-color: var(--accent);
-  background: var(--bg-elevated-2);
+  background: var(--accent-soft);
 }
 
 .kanban-column__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.7rem 0.8rem 0.5rem;
+  padding: 0.8rem 0.9rem 0.5rem;
   flex-shrink: 0;
 }
 
 .kanban-column__header h3 {
   margin: 0;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   text-transform: uppercase;
   letter-spacing: 0.03em;
   color: var(--text-muted);
+  font-weight: 700;
 }
 
 .kanban-column__count {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  background: var(--bg-elevated-2);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--accent-strong);
+  background: var(--bg-elevated);
   border-radius: 999px;
-  padding: 0.05rem 0.5rem;
+  padding: 0.05rem 0.55rem;
 }
 
 .kanban-column__cards {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  padding: 0 0.6rem 0.6rem;
+  gap: 0.55rem;
+  padding: 0 0.7rem 0.7rem;
   overflow-y: auto;
   min-height: 40px;
 }
 
 .kanban-column__footer {
-  padding: 0.6rem;
+  padding: 0.6rem 0.7rem;
   border-top: 1px solid var(--border);
 }
 
 .kanban-card {
-  background: var(--bg-elevated-2);
+  background: var(--bg-elevated);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 0.6rem 0.7rem;
+  border-radius: var(--radius-md);
+  padding: 0.7rem 0.8rem;
   cursor: grab;
+  box-shadow: var(--shadow-sm);
+  transition:
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
+}
+
+.kanban-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
 }
 
 .kanban-card:active {
@@ -379,7 +445,7 @@ select {
 
 .kanban-card__header h4 {
   margin: 0;
-  font-size: 0.85rem;
+  font-size: 0.86rem;
   line-height: 1.3;
 }
 
@@ -393,17 +459,17 @@ select {
 .kanban-card__footer {
   display: flex;
   justify-content: space-between;
-  margin-top: 0.5rem;
+  margin-top: 0.55rem;
   font-size: 0.72rem;
   color: var(--text-muted);
 }
 
-/* ---- Modal de detalhe do card ---- */
+/* ---- Modal de detalhe do card (uso pontual, ex.: confirmações) ---- */
 
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.55);
+  background: rgba(44, 36, 64, 0.35);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -415,10 +481,11 @@ select {
   max-height: 88vh;
   background: var(--bg-elevated);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  box-shadow: var(--shadow-md);
 }
 
 .modal-panel__header {
@@ -451,10 +518,11 @@ select {
 
 .modal-section h3 {
   margin: 0 0 0.5rem;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   text-transform: uppercase;
   letter-spacing: 0.03em;
   color: var(--text-muted);
+  font-weight: 700;
 }
 
 .modal-section__row {
@@ -471,7 +539,7 @@ select {
 .modal-section__row select {
   background: var(--bg-elevated-2);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   padding: 0.3rem 0.5rem;
 }
 
@@ -479,7 +547,7 @@ select {
   width: 100%;
   background: var(--bg-elevated-2);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   padding: 0.6rem;
   resize: vertical;
   margin-bottom: 0.5rem;
@@ -496,25 +564,29 @@ select {
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
-  background: var(--bg-elevated-2);
+  background: var(--accent-soft);
+  color: var(--accent-strong);
   border: 1px solid var(--border);
   border-radius: 999px;
   padding: 0.15rem 0.4rem 0.15rem 0.65rem;
   font-size: 0.78rem;
+  font-weight: 600;
 }
 
 .tag-chip button {
   background: none;
   border: none;
-  color: var(--text-muted);
+  color: var(--accent-strong);
   cursor: pointer;
   font-size: 0.9rem;
   line-height: 1;
   padding: 0 0.2rem;
+  opacity: 0.7;
 }
 
 .tag-chip button:hover {
   color: var(--error);
+  opacity: 1;
 }
 
 .comment-list {
@@ -527,8 +599,8 @@ select {
 .comment-item {
   background: var(--bg-elevated-2);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 0.5rem 0.7rem;
+  border-radius: var(--radius-md);
+  padding: 0.55rem 0.75rem;
 }
 
 .comment-item p {
@@ -571,7 +643,7 @@ select {
 
 .status-badge {
   font-size: 0.7rem;
-  font-weight: 600;
+  font-weight: 700;
   padding: 0.15rem 0.55rem;
   border-radius: 999px;
   white-space: nowrap;
@@ -580,31 +652,31 @@ select {
 }
 
 .status-badge--backlog {
-  background: #2a2f3a;
-  color: #9aa0a6;
+  background: #ece8f7;
+  color: #786e99;
 }
 
 .status-badge--to_study {
-  background: #2a3a52;
-  color: #7cb0f2;
+  background: #e0eafc;
+  color: #3c72c9;
 }
 
 .status-badge--studying {
-  background: #3a3320;
-  color: #f2c94c;
+  background: #faf0dc;
+  color: #b9791f;
 }
 
 .status-badge--paused {
-  background: #3a2a2a;
-  color: #f2947a;
+  background: #fbe4e7;
+  color: #c8455b;
 }
 
 .status-badge--review {
-  background: #322a3a;
-  color: #c79cf2;
+  background: #f0e4fb;
+  color: #8b3fd6;
 }
 
 .status-badge--done {
-  background: #1f3a2a;
-  color: #6ee7a0;
+  background: #dff5ec;
+  color: #18926a;
 }
