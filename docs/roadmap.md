@@ -35,42 +35,51 @@ Marcado como funcionalidade implementada apenas depois de rodar e ser validada.
 - [x] Drag-and-drop confirmado pelo usuário: card movido entre colunas persiste após
       fechar e reabrir o app
 
-## Fase 3 — Detalhe do card
+## Fase 3 — Detalhe do card ✅
 
-- [ ] Modal/tela de detalhe: descrição (edição), tags, comentários
-- [ ] Aba de histórico (linha do tempo de mudanças de status)
-- [ ] Commit: *"feat: visualização detalhada do card"*
+- [x] Tela de detalhe (inicialmente modal, depois promovida a tela inteira dedicada — ver Fase 3.1):
+      descrição (edição), tags, comentários
+- [x] Aba de histórico (linha do tempo de mudanças de status)
+- [x] Commit: *"feat: visualização detalhada do card (Fase 3)"*
 
-## Fase 4 — Cronômetro
+## Fase 3.1 — Tela cheia dedicada ao card ✅
 
-- [ ] Botão "Iniciar estudo" / "Parar" no card e no detalhe
-- [ ] Regra: só uma sessão aberta por card por vez
-- [ ] Grava `study_sessions` (início, fim, duração)
-- [ ] Exibe tempo total acumulado no card (campo desnormalizado `total_study_seconds`)
-- [ ] Lista de sessões anteriores no detalhe do card
-- [ ] Commit: *"feat: cronômetro de estudo por card"*
+- [x] Modal substituído por uma tela inteira (`CardDetailPage`), sem overlay, com botão de voltar
+- [x] Navegação direta entre cards relacionados sem passar pelo quadro Kanban
+- [x] Commit: *"feat: tela cheia dedicada ao card (substitui o modal)"*
 
-## Fase 5 — Pomodoro
+## Fase 4 — Cronômetro ✅
 
-- [ ] Configuração global (foco/pausa curta/pausa longa/ciclos) editável em Configurações
-- [ ] Timer de Pomodoro por card, ligado ao cronômetro (ciclo de foco = sessão de estudo)
-- [ ] Contagem de pomodoros concluídos por card (campo desnormalizado `pomodoros_completed`)
-- [ ] Notificação sonora/visual ao trocar de ciclo
-- [ ] Commit: *"feat: Pomodoro configurável por card"*
+- [x] Botão "Iniciar estudo" / "Parar" na tela do card
+- [x] Regra: só uma sessão aberta por card por vez
+- [x] Grava `study_sessions` (início, fim, duração)
+- [x] Exibe tempo total acumulado no card (campo desnormalizado `total_study_seconds`)
+- [x] Lista de sessões anteriores na tela do card
+- [x] Commit: *"feat: backend de cronômetro, Pomodoro e relacionamentos entre cards"*
 
-## Fase 6 — Relacionamentos entre cards
+## Fase 5 — Pomodoro ✅
 
-- [ ] Criar/remover relação entre dois cards (`prerequisite_of`, `blocks`, `related_to`, `part_of`)
-- [ ] Exibir relações no detalhe do card (com link para navegar até o card relacionado)
-- [ ] Commit: *"feat: relacionamentos entre cards"*
+- [x] Configuração global (foco/pausa curta/pausa longa/ciclos), editável na própria tela do card
+- [x] Timer de Pomodoro por card, ligado ao cronômetro (ciclo de foco = sessão de estudo)
+- [x] Contagem de pomodoros concluídos por card (campo desnormalizado `pomodoros_completed`)
+- [ ] Notificação sonora/visual ao trocar de ciclo (fica para depois — hoje só o contador visual)
+- [x] Commit: *"feat: backend de cronômetro, Pomodoro e relacionamentos entre cards"*
 
-## Fase 7 — Dashboard e métricas (pós-MVP)
+## Fase 6 — Relacionamentos entre cards ✅
 
-- [ ] Horas estudadas hoje / semana
-- [ ] Horas por matéria (grupo) e por card
-- [ ] Quantidade de Pomodoros, cards concluídos vs. pendentes
-- [ ] Média diária de estudo, evolução por semana (gráfico)
-- [ ] Commit: *"feat: dashboard de métricas"*
+- [x] Criar/remover relação entre dois cards (`prerequisite_of`, `blocks`, `related_to`, `part_of`)
+- [x] Exibir relações na tela do card (com link para navegar até o card relacionado), busca por
+      título no workspace inteiro (não só no grupo atual)
+- [x] Commit: *"feat: backend de cronômetro, Pomodoro e relacionamentos entre cards"*
+
+## Fase 7 — Dashboard e métricas ✅
+
+- [x] Quantidade de cards por status, agrupados em aberto/em andamento/concluído
+- [x] Horas estudadas e Pomodoros concluídos (workspace inteiro)
+- [x] Gráficos (barra empilhada de andamento + barras por status), paleta validada
+      (contraste/daltonismo) com a skill de dataviz
+- [ ] Horas por matéria (grupo) e evolução por semana (fica para depois)
+- [x] Commit: *"feat: dashboard com contagens, horas estudadas e graficos"*
 
 ## Fase 8 — Empacotamento ✅ (adiantada — validada já na Fase 1)
 
@@ -79,6 +88,13 @@ Marcado como funcionalidade implementada apenas depois de rodar e ser validada.
 - [x] Instalador testado manualmente (assistente abre, detecta pt-BR, opção usuário/todos)
 - [ ] Ícone próprio do app (hoje usa o ícone padrão do Electron — ver `build/`)
 - [ ] Atalho no Menu Iniciar/Desktop e desinstalador testados até o fim (instalação completa)
+
+## Fase 9 — Atualização automática ✅
+
+- [x] `electron-updater` + publish via GitHub Releases (`electron-builder.yml`)
+- [x] Checagem e download em segundo plano ao abrir o app (só em build empacotado, não em dev)
+- [x] Diálogo perguntando se quer reiniciar agora ou aplicar a atualização ao fechar o app
+- [x] Commit: *"feat: atualizacao automatica via GitHub Releases (electron-updater)"*
 
 ## Backlog futuro (fora do MVP, arquitetura já permite)
 

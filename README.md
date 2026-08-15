@@ -54,7 +54,9 @@ Ver estado detalhado em [`docs/features.md`](docs/features.md) e o plano complet
 - Cronômetro individual por card, com sessões de estudo registradas
 - Pomodoro configurável, vinculado a cada card
 - Relacionamentos entre cards (pré-requisito, bloqueia, relacionado, parte de)
-- Instalador `.exe` para Windows, funcionando totalmente offline
+- Dashboard com contagens por status, horas estudadas, Pomodoros e gráficos
+- Instalador `.exe` para Windows, funcionando totalmente offline, com atualização automática
+  via internet (GitHub Releases)
 
 ## ⚙️ Pré-requisitos
 

@@ -7,23 +7,27 @@ em alto nível.
 
 - Grupos hierárquicos (matérias/projetos, subgrupos ilimitados)
 - Criação de cards (título + descrição opcional) dentro de um grupo
-- Troca de status do card (Backlog, A estudar, Estudando, Pausado, Revisar, Concluído) via seletor
-- Histórico de mudanças de status por card (gravado automaticamente, ainda sem tela de visualização)
-
-## Pendentes (MVP)
-
-- Quadro Kanban visual com colunas e drag-and-drop (hoje a troca de status é por um seletor, não arrastando)
-- Edição de descrição/tags/comentários de um card já criado
-- Tela de detalhe do card (descrição, comentários, histórico, sessões, relacionamentos)
-- Cronômetro individual por card (sessões de estudo com início/fim/duração)
-- Pomodoro configurável, vinculado ao card
-- Relacionamentos entre cards (pré-requisito, bloqueia, relacionado, parte de)
-- Instalador `.exe` para Windows
+- Quadro Kanban visual com colunas fixas e drag-and-drop (Backlog, A estudar, Estudando,
+  Pausado, Revisar, Concluído)
+- Histórico de mudanças de status por card (gravado automaticamente, com tela de visualização)
+- Tela inteira dedicada ao card (não modal): descrição editável, tags, comentários, histórico
+- Cronômetro individual por card (uma sessão aberta por vez, sessões anteriores listadas)
+- Pomodoro configurável (foco/pausa curta/pausa longa/ciclos), ciclo de foco conta como sessão
+  de estudo
+- Relacionamentos entre cards (pré-requisito, bloqueia, relacionado, parte de), com busca por
+  título no workspace inteiro e navegação direta entre cards relacionados
+- Dashboard com contagem de cards por status (aberto/em andamento/concluído), horas estudadas,
+  Pomodoros concluídos e gráficos
+- Instalador `.exe` para Windows, funcionando totalmente offline, com dependências embutidas
+- Atualização automática via internet (GitHub Releases, `electron-updater`)
+- Layout em paleta lavanda/roxo claro, estilo app de estudos
 
 ## Pendentes (pós-MVP)
 
-- Dashboard com métricas (horas hoje/semana, por matéria, evolução, etc.)
+- Notificação sonora/visual ao trocar de ciclo do Pomodoro
+- Horas por matéria (grupo) e evolução por semana no dashboard
+- Ícone próprio do instalador (hoje usa o ícone padrão do Electron)
 - Sincronização/backup em nuvem
 - Múltiplos workspaces
 - Exportação de dados
-- Temas claro/escuro
+- Temas claro/escuro (hoje só claro)

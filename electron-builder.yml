@@ -14,3 +14,7 @@ nsis:
   allowToChangeInstallationDirectory: true
   createDesktopShortcut: false
   createStartMenuShortcut: true
+publish:
+  provider: github
+  owner: Matheus-Emanoel-Souza
+  repo: LearnDeck
