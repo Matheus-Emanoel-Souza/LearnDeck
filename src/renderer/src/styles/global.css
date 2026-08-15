@@ -725,13 +725,12 @@ select {
   text-decoration: underline;
 }
 
-.relation-search {
-  position: relative;
+.relation-picker__controls {
   display: flex;
-  gap: 0.35rem;
+  gap: 0.4rem;
 }
 
-.relation-search select {
+.relation-picker__controls select {
   background: var(--bg-elevated-2);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -739,33 +738,40 @@ select {
   font-size: 0.78rem;
 }
 
-.relation-search input {
-  flex: 1;
+.relation-picker__panel {
+  margin-top: 0.5rem;
   background: var(--bg-elevated-2);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 0.35rem 0.5rem;
+  padding: 0.5rem;
 }
 
-.relation-search__results {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  margin-top: 0.3rem;
+.relation-picker__panel input {
+  width: 100%;
   background: var(--bg-elevated);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-md);
-  list-style: none;
-  padding: 0.3rem;
-  z-index: 5;
-  max-height: 200px;
-  overflow-y: auto;
+  padding: 0.35rem 0.5rem;
+  margin-bottom: 0.4rem;
 }
 
-.relation-search__results button {
+.relation-picker__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 220px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.relation-picker__list button {
   width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
   text-align: left;
   background: none;
   border: none;
@@ -776,9 +782,14 @@ select {
   color: var(--text);
 }
 
-.relation-search__results button:hover {
+.relation-picker__list button:hover:not(:disabled) {
   background: var(--accent-soft);
   color: var(--accent-strong);
+}
+
+.relation-picker__list button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* ---- Dashboard ---- */

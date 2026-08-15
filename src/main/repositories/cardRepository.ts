@@ -161,6 +161,29 @@ export function searchCardsInWorkspace(
   return rows.map((row) => ({ id: row.id, groupId: row.group_id, title: row.title, status: row.status }))
 }
 
+/** Todos os cards do workspace, em resumo — usado pelo seletor "relacionar com" para listar tudo de uma vez. */
+export function listAllCardSummariesInWorkspace(
+  db: Database.Database,
+  workspaceId: string,
+  excludeCardId: string
+): CardSummary[] {
+  const rows = db
+    .prepare(
+      `SELECT c.id, c.group_id, c.title, c.status FROM cards c
+       JOIN groups g ON g.id = c.group_id
+       WHERE g.workspace_id = ? AND c.deleted_at IS NULL AND c.id != ?
+       ORDER BY c.title ASC`
+    )
+    .all(workspaceId, excludeCardId) as Array<{
+    id: string
+    group_id: string
+    title: string
+    status: CardStatus
+  }>
+
+  return rows.map((row) => ({ id: row.id, groupId: row.group_id, title: row.title, status: row.status }))
+}
+
 /** Todos os cards não excluídos de um workspace (usado pelo dashboard para contagens/agregações). */
 export function listCardsForWorkspace(db: Database.Database, workspaceId: string): Card[] {
   const rows = db

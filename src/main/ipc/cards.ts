@@ -1,7 +1,11 @@
 import { ipcMain } from 'electron'
 import type Database from 'better-sqlite3'
 import type { Card, CardSummary, CreateCardInput, UpdateCardInput } from '@shared/types'
-import { getCard, searchCardsInWorkspace } from '../repositories/cardRepository'
+import {
+  getCard,
+  listAllCardSummariesInWorkspace,
+  searchCardsInWorkspace
+} from '../repositories/cardRepository'
 import { createCard, deleteCard, listCards, updateCard } from '../services/cardService'
 
 export function registerCardsIpc(db: Database.Database): void {
@@ -22,5 +26,11 @@ export function registerCardsIpc(db: Database.Database): void {
     'cards:search',
     (_event, workspaceId: string, query: string, excludeCardId: string): CardSummary[] =>
       query.trim().length < 2 ? [] : searchCardsInWorkspace(db, workspaceId, query.trim(), excludeCardId)
+  )
+
+  ipcMain.handle(
+    'cards:listAllSummaries',
+    (_event, workspaceId: string, excludeCardId: string): CardSummary[] =>
+      listAllCardSummariesInWorkspace(db, workspaceId, excludeCardId)
   )
 }

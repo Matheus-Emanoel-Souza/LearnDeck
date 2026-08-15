@@ -46,7 +46,9 @@ const api = {
       ipcRenderer.invoke('cards:update', id, patch),
     delete: (id: string): Promise<void> => ipcRenderer.invoke('cards:delete', id),
     search: (workspaceId: string, query: string, excludeCardId: string): Promise<CardSummary[]> =>
-      ipcRenderer.invoke('cards:search', workspaceId, query, excludeCardId)
+      ipcRenderer.invoke('cards:search', workspaceId, query, excludeCardId),
+    listAllSummaries: (workspaceId: string, excludeCardId: string): Promise<CardSummary[]> =>
+      ipcRenderer.invoke('cards:listAllSummaries', workspaceId, excludeCardId)
   },
   comments: {
     listByCard: (cardId: string): Promise<Comment[]> => ipcRenderer.invoke('comments:listByCard', cardId),
