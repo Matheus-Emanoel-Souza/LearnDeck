@@ -2,9 +2,12 @@ import { contextBridge, ipcRenderer } from 'electron'
 import type { AppInfo } from '../main/ipc/app'
 import type {
   Card,
+  Comment,
   CreateCardInput,
   CreateGroupInput,
   Group,
+  StatusHistoryEntry,
+  Tag,
   UpdateCardInput,
   UpdateGroupInput
 } from '@shared/types'
@@ -31,6 +34,23 @@ const api = {
     update: (id: string, patch: UpdateCardInput): Promise<Card> =>
       ipcRenderer.invoke('cards:update', id, patch),
     delete: (id: string): Promise<void> => ipcRenderer.invoke('cards:delete', id)
+  },
+  comments: {
+    listByCard: (cardId: string): Promise<Comment[]> => ipcRenderer.invoke('comments:listByCard', cardId),
+    create: (cardId: string, body: string): Promise<Comment> =>
+      ipcRenderer.invoke('comments:create', cardId, body),
+    delete: (id: string): Promise<void> => ipcRenderer.invoke('comments:delete', id)
+  },
+  tags: {
+    listForCard: (cardId: string): Promise<Tag[]> => ipcRenderer.invoke('tags:listForCard', cardId),
+    attachToCard: (cardId: string, tagName: string): Promise<Tag[]> =>
+      ipcRenderer.invoke('tags:attachToCard', cardId, tagName),
+    detachFromCard: (cardId: string, tagId: string): Promise<Tag[]> =>
+      ipcRenderer.invoke('tags:detachFromCard', cardId, tagId)
+  },
+  history: {
+    listByCard: (cardId: string): Promise<StatusHistoryEntry[]> =>
+      ipcRenderer.invoke('history:listByCard', cardId)
   }
 }
 

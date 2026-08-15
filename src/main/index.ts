@@ -5,6 +5,9 @@ import { runMigrations } from './db/migrate'
 import { registerAppIpc } from './ipc/app'
 import { registerGroupsIpc } from './ipc/groups'
 import { registerCardsIpc } from './ipc/cards'
+import { registerCommentsIpc } from './ipc/comments'
+import { registerTagsIpc } from './ipc/tags'
+import { registerHistoryIpc } from './ipc/history'
 
 const isDev = !app.isPackaged
 
@@ -45,6 +48,9 @@ app.whenReady().then(() => {
   registerAppIpc(db)
   registerGroupsIpc(db)
   registerCardsIpc(db)
+  registerCommentsIpc(db)
+  registerTagsIpc(db)
+  registerHistoryIpc(db)
 
   createMainWindow()
 

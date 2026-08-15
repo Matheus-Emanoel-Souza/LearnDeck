@@ -12,6 +12,7 @@ interface KanbanColumnProps {
   onDropOnColumn: () => void
   onDragOverCard: (index: number) => void
   onDropOnCard: (index: number) => void
+  onOpenCard: (card: Card) => void
   headerExtra?: ReactNode
 }
 
@@ -24,6 +25,7 @@ export default function KanbanColumn({
   onDropOnColumn,
   onDragOverCard,
   onDropOnCard,
+  onOpenCard,
   headerExtra
 }: KanbanColumnProps): JSX.Element {
   return (
@@ -52,6 +54,7 @@ export default function KanbanColumn({
             onDragStart={onDragStart}
             onDragOverCard={onDragOverCard}
             onDropOnCard={onDropOnCard}
+            onOpen={onOpenCard}
           />
         ))}
         {cards.length === 0 && <p className="empty-hint">Nenhum card aqui.</p>}

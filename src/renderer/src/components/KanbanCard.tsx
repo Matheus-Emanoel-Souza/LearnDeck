@@ -6,6 +6,7 @@ interface KanbanCardProps {
   onDragStart: (cardId: string) => void
   onDragOverCard: (index: number) => void
   onDropOnCard: (index: number) => void
+  onOpen: (card: Card) => void
   index: number
 }
 
@@ -14,12 +15,14 @@ export default function KanbanCard({
   onDragStart,
   onDragOverCard,
   onDropOnCard,
+  onOpen,
   index
 }: KanbanCardProps): JSX.Element {
   return (
     <div
       className="kanban-card"
       draggable
+      onClick={() => onOpen(card)}
       onDragStart={() => onDragStart(card.id)}
       onDragOver={(e) => {
         e.preventDefault()

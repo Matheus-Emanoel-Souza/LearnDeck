@@ -4,6 +4,7 @@ import { buildGroupTree } from '../lib/groupTree'
 import { reorderCards } from '../lib/kanban'
 import GroupSidebar from '../components/GroupSidebar'
 import KanbanBoard from '../components/KanbanBoard'
+import CardDetailModal from '../components/CardDetailModal'
 
 interface StudyPanelProps {
   workspaceId: string
@@ -19,6 +20,7 @@ export default function StudyPanel({ workspaceId }: StudyPanelProps): JSX.Elemen
   const [cards, setCards] = useState<Card[]>([])
   const [loadingCards, setLoadingCards] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [openCardId, setOpenCardId] = useState<string | null>(null)
 
   const tree = useMemo(() => buildGroupTree(groups), [groups])
 
@@ -101,6 +103,7 @@ export default function StudyPanel({ workspaceId }: StudyPanelProps): JSX.Elemen
   }
 
   const selectedGroup = groups.find((g) => g.id === selectedGroupId) ?? null
+  const openCard = cards.find((c) => c.id === openCardId) ?? null
 
   return (
     <div className="study-panel">
@@ -127,11 +130,26 @@ export default function StudyPanel({ workspaceId }: StudyPanelProps): JSX.Elemen
             {loadingCards && <p className="empty-hint">Carregando cards…</p>}
 
             {!loadingCards && (
-              <KanbanBoard cards={cards} onMoveCard={handleMoveCard} onCreateCard={handleCreateCard} />
+              <KanbanBoard
+                cards={cards}
+                onMoveCard={handleMoveCard}
+                onCreateCard={handleCreateCard}
+                onOpenCard={(card) => setOpenCardId(card.id)}
+              />
             )}
           </>
         )}
       </section>
+
+      {openCard && (
+        <CardDetailModal
+          card={openCard}
+          onClose={() => setOpenCardId(null)}
+          onCardUpdated={(updated) =>
+            setCards((prev) => prev.map((c) => (c.id === updated.id ? updated : c)))
+          }
+        />
+      )}
     </div>
   )
 }

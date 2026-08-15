@@ -9,6 +9,7 @@ interface KanbanBoardProps {
   cards: Card[]
   onMoveCard: (cardId: string, targetStatus: CardStatus, targetIndex: number | null) => Promise<void>
   onCreateCard: (title: string, description: string | null) => Promise<void>
+  onOpenCard: (card: Card) => void
 }
 
 /**
@@ -17,7 +18,12 @@ interface KanbanBoardProps {
  * sempre entram em "Backlog" (regra do CardService), por isso o formulário
  * de criação fica só nessa coluna.
  */
-export default function KanbanBoard({ cards, onMoveCard, onCreateCard }: KanbanBoardProps): JSX.Element {
+export default function KanbanBoard({
+  cards,
+  onMoveCard,
+  onCreateCard,
+  onOpenCard
+}: KanbanBoardProps): JSX.Element {
   const [draggedCardId, setDraggedCardId] = useState<string | null>(null)
   const [dropTargetStatus, setDropTargetStatus] = useState<CardStatus | null>(null)
 
@@ -44,6 +50,7 @@ export default function KanbanBoard({ cards, onMoveCard, onCreateCard }: KanbanB
           onDropOnColumn={() => void finishDrop(status, null)}
           onDragOverCard={() => setDropTargetStatus(status)}
           onDropOnCard={(index) => void finishDrop(status, index)}
+          onOpenCard={onOpenCard}
           headerExtra={status === 'backlog' ? <NewCardForm onCreate={onCreateCard} /> : undefined}
         />
       ))}
