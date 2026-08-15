@@ -11,6 +11,7 @@ import { registerHistoryIpc } from './ipc/history'
 import { registerTimerIpc } from './ipc/timer'
 import { registerPomodoroIpc } from './ipc/pomodoro'
 import { registerRelationsIpc } from './ipc/relations'
+import { registerDashboardIpc } from './ipc/dashboard'
 
 const isDev = !app.isPackaged
 
@@ -57,6 +58,7 @@ app.whenReady().then(() => {
   registerTimerIpc(db)
   registerPomodoroIpc(db)
   registerRelationsIpc(db)
+  registerDashboardIpc(db)
 
   createMainWindow()
 

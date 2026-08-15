@@ -1,10 +1,14 @@
 import { useEffect, useState } from 'react'
 import type { AppInfo } from '../../main/ipc/app'
 import StudyPanel from './pages/StudyPanel'
+import Dashboard from './pages/Dashboard'
+
+type Tab = 'board' | 'dashboard'
 
 export default function App(): JSX.Element {
   const [info, setInfo] = useState<AppInfo | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [tab, setTab] = useState<Tab>('board')
 
   useEffect(() => {
     window.api.app
@@ -36,8 +40,28 @@ export default function App(): JSX.Element {
       <header className="app-header">
         <h1>LearnDeck</h1>
         <span className="app-header__version">v{info.version}</span>
+        <nav className="app-nav">
+          <button
+            className={`app-nav__tab ${tab === 'board' ? 'app-nav__tab--active' : ''}`}
+            onClick={() => setTab('board')}
+          >
+            Quadro
+          </button>
+          <button
+            className={`app-nav__tab ${tab === 'dashboard' ? 'app-nav__tab--active' : ''}`}
+            onClick={() => setTab('dashboard')}
+          >
+            Dashboard
+          </button>
+        </nav>
       </header>
-      <StudyPanel workspaceId={info.workspace.id} />
+      {tab === 'board' ? (
+        <StudyPanel workspaceId={info.workspace.id} />
+      ) : (
+        <div className="card-panel">
+          <Dashboard workspaceId={info.workspace.id} />
+        </div>
+      )}
     </div>
   )
 }

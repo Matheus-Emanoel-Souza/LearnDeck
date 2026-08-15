@@ -190,3 +190,14 @@ export interface CreateCardRelationInput {
   relatedCardId: string
   relationType: CardRelationType
 }
+
+/** Agregados do workspace inteiro para o dashboard. */
+export interface DashboardSummary {
+  totalCards: number
+  openCount: number
+  inProgressCount: number
+  doneCount: number
+  byStatus: Record<CardStatus, number>
+  totalStudySeconds: number
+  totalPomodoros: number
+}

@@ -9,6 +9,7 @@ import type {
   CreateCardInput,
   CreateCardRelationInput,
   CreateGroupInput,
+  DashboardSummary,
   Group,
   Pomodoro,
   PomodoroConfig,
@@ -91,6 +92,10 @@ const api = {
     create: (input: CreateCardRelationInput): Promise<CardRelation> =>
       ipcRenderer.invoke('relations:create', input),
     delete: (id: string): Promise<void> => ipcRenderer.invoke('relations:delete', id)
+  },
+  dashboard: {
+    getSummary: (workspaceId: string): Promise<DashboardSummary> =>
+      ipcRenderer.invoke('dashboard:getSummary', workspaceId)
   }
 }
 
