@@ -19,6 +19,11 @@ Windows x64 sem instalação. Falta apenas o passo de empacotar isso em um únic
 terminal "Como administrador" uma única vez para esse comando. Nenhuma mudança de código é
 necessária — é puramente uma permissão do Windows.
 
+**Resolvido em 2026-08-14:** usuário ativou o Modo de desenvolvedor e `npm run dist` passou a
+gerar `dist\LearnDeck-Setup-0.1.0.exe` (NSIS) normalmente. Instalador testado (abre o
+assistente, detecta idioma pt-BR do sistema, oferece instalação só para o usuário atual ou
+para todos) — não foi executado até o fim para não alterar o sistema sem pedido explícito.
+
 ## 2026-08-14 — `postinstall` roda `electron-builder install-app-deps`
 
 **Contexto:** ao rodar o app pela primeira vez, `better-sqlite3` (módulo nativo, compilado em

@@ -70,13 +70,13 @@ Marcado como funcionalidade implementada apenas depois de rodar e ser validada.
 - [ ] Média diária de estudo, evolução por semana (gráfico)
 - [ ] Commit: *"feat: dashboard de métricas"*
 
-## Fase 8 — Empacotamento
+## Fase 8 — Empacotamento ✅ (adiantada — validada já na Fase 1)
 
-- [ ] `electron-builder` configurado para gerar instalador `.exe` (NSIS), self-contained,
-      seguindo o mesmo padrão do RadarTorres (instala em Program Files, atalho no Menu
-      Iniciar, desinstalador registrado)
-- [ ] Script único de build (`npm run dist`) gerando o instalador em `dist/`
-- [ ] Commit: *"chore: pipeline de empacotamento do instalador"*
+- [x] `electron-builder` configurado para gerar instalador `.exe` (NSIS), self-contained
+- [x] Script único de build (`npm run dist`) gerando o instalador em `dist/`
+- [x] Instalador testado manualmente (assistente abre, detecta pt-BR, opção usuário/todos)
+- [ ] Ícone próprio do app (hoje usa o ícone padrão do Electron — ver `build/`)
+- [ ] Atalho no Menu Iniciar/Desktop e desinstalador testados até o fim (instalação completa)
 
 ## Backlog futuro (fora do MVP, arquitetura já permite)
 
