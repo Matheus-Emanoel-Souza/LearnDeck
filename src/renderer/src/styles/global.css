@@ -254,6 +254,9 @@ select {
   flex: 1;
   padding: 1.25rem 1.5rem;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .card-panel__header {
@@ -272,11 +275,6 @@ select {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  background: var(--bg-elevated);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 0.75rem;
-  max-width: 420px;
 }
 
 .new-card-form input,
@@ -294,54 +292,110 @@ select {
   align-items: center;
 }
 
-.card-list {
+/* ---- Kanban ---- */
+
+.kanban-board {
+  flex: 1;
+  display: flex;
+  gap: 0.9rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+  min-height: 0;
+}
+
+.kanban-column {
+  flex: 0 0 260px;
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
-  margin-top: 1rem;
-}
-
-.card-item {
   background: var(--bg-elevated);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  min-height: 0;
+  transition: border-color 0.15s ease, background 0.15s ease;
 }
 
-.card-item__header {
+.kanban-column--drop-target {
+  border-color: var(--accent);
+  background: var(--bg-elevated-2);
+}
+
+.kanban-column__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.5rem;
+  padding: 0.7rem 0.8rem 0.5rem;
+  flex-shrink: 0;
 }
 
-.card-item__header h3 {
+.kanban-column__header h3 {
   margin: 0;
-  font-size: 0.95rem;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-muted);
 }
 
-.card-item__description {
-  margin: 0.4rem 0 0;
+.kanban-column__count {
+  font-size: 0.75rem;
   color: var(--text-muted);
+  background: var(--bg-elevated-2);
+  border-radius: 999px;
+  padding: 0.05rem 0.5rem;
+}
+
+.kanban-column__cards {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0 0.6rem 0.6rem;
+  overflow-y: auto;
+  min-height: 40px;
+}
+
+.kanban-column__footer {
+  padding: 0.6rem;
+  border-top: 1px solid var(--border);
+}
+
+.kanban-card {
+  background: var(--bg-elevated-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.6rem 0.7rem;
+  cursor: grab;
+}
+
+.kanban-card:active {
+  cursor: grabbing;
+}
+
+.kanban-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.4rem;
+}
+
+.kanban-card__header h4 {
+  margin: 0;
   font-size: 0.85rem;
+  line-height: 1.3;
+}
+
+.kanban-card__description {
+  margin: 0.35rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.78rem;
   white-space: pre-wrap;
 }
 
-.card-item__footer {
+.kanban-card__footer {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  margin-top: 0.6rem;
-  font-size: 0.8rem;
+  margin-top: 0.5rem;
+  font-size: 0.72rem;
   color: var(--text-muted);
-}
-
-.card-item__status-select select {
-  margin-left: 0.4rem;
-  background: var(--bg-elevated-2);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 0.2rem 0.4rem;
 }
 
 /* ---- Badge de status ---- */

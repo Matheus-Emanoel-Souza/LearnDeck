@@ -1,18 +1,17 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { Card, CardStatus, Group } from '@shared/types'
 import { buildGroupTree } from '../lib/groupTree'
+import { reorderCards } from '../lib/kanban'
 import GroupSidebar from '../components/GroupSidebar'
-import NewCardForm from '../components/NewCardForm'
-import CardListItem from '../components/CardListItem'
+import KanbanBoard from '../components/KanbanBoard'
 
 interface StudyPanelProps {
   workspaceId: string
 }
 
 /**
- * Painel inicial: grupos (matérias/projetos) na lateral, cards do grupo
- * selecionado no centro, com formulário para criar novos cards.
- * Kanban visual (colunas + arrastar) entra na Fase 2 (ver docs/roadmap.md).
+ * Painel inicial: grupos (matérias/projetos) na lateral, quadro Kanban do
+ * grupo selecionado no centro. Ver docs/roadmap.md (Fase 2).
  */
 export default function StudyPanel({ workspaceId }: StudyPanelProps): JSX.Element {
   const [groups, setGroups] = useState<Group[]>([])
@@ -73,13 +72,31 @@ export default function StudyPanel({ workspaceId }: StudyPanelProps): JSX.Elemen
     }
   }
 
-  async function handleChangeStatus(cardId: string, status: CardStatus): Promise<void> {
+  async function handleMoveCard(
+    cardId: string,
+    targetStatus: CardStatus,
+    targetIndex: number | null
+  ): Promise<void> {
     if (!selectedGroupId) return
+    const updates = reorderCards(cards, cardId, targetStatus, targetIndex)
+    if (updates.length === 0) return
+
+    // Atualização otimista: o Kanban já reflete a nova posição/coluna
+    // enquanto as chamadas IPC (e o registro em status_history) acontecem.
+    setCards((prev) =>
+      prev.map((card) => {
+        const update = updates.find((u) => u.id === card.id)
+        return update ? { ...card, status: update.status, position: update.position } : card
+      })
+    )
+
     try {
-      await window.api.cards.update(cardId, { status })
-      await reloadCards(selectedGroupId)
+      for (const update of updates) {
+        await window.api.cards.update(update.id, { status: update.status, position: update.position })
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
+      await reloadCards(selectedGroupId)
     }
   }
 
@@ -98,27 +115,20 @@ export default function StudyPanel({ workspaceId }: StudyPanelProps): JSX.Elemen
         {error && <p className="status status--error">{error}</p>}
 
         {!selectedGroup && (
-          <p className="empty-hint">Selecione um grupo à esquerda (ou crie um) para ver e criar cards.</p>
+          <p className="empty-hint">Selecione um grupo à esquerda (ou crie um) para ver o quadro.</p>
         )}
 
         {selectedGroup && (
           <>
             <header className="card-panel__header">
               <h2>{selectedGroup.name}</h2>
-              <NewCardForm onCreate={handleCreateCard} />
             </header>
 
             {loadingCards && <p className="empty-hint">Carregando cards…</p>}
 
-            {!loadingCards && cards.length === 0 && (
-              <p className="empty-hint">Nenhum card ainda neste grupo. Crie o primeiro acima.</p>
+            {!loadingCards && (
+              <KanbanBoard cards={cards} onMoveCard={handleMoveCard} onCreateCard={handleCreateCard} />
             )}
-
-            <div className="card-list">
-              {cards.map((card) => (
-                <CardListItem key={card.id} card={card} onChangeStatus={handleChangeStatus} />
-              ))}
-            </div>
           </>
         )}
       </section>
