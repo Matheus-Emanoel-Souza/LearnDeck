@@ -1,26 +1,32 @@
 import { useCallback, useEffect, useState } from 'react'
 import type {
+  Attachment,
+  BoardColumn,
   Card,
   CardRelationType,
   CardRelationView,
-  CardStatus,
   Comment,
   StatusHistoryEntry,
   StudySession,
+  Subtask,
   Tag
 } from '@shared/types'
-import { CARD_STATUSES, CARD_STATUS_LABELS } from '@shared/types'
 import { formatDateTime } from '../lib/formatDate'
+import { columnName } from '../lib/columns'
+import { getDueStatus } from '../lib/dueStatus'
 import StatusBadge from '../components/StatusBadge'
 import CardTimer from '../components/CardTimer'
 import CardPomodoro from '../components/CardPomodoro'
 import CardSessions from '../components/CardSessions'
 import CardRelations from '../components/CardRelations'
+import CardAttachments from '../components/CardAttachments'
+import CardSubtasks from '../components/CardSubtasks'
 import CardIdBadge from '../components/CardIdBadge'
 
 interface CardDetailPageProps {
   card: Card
   workspaceId: string
+  columns: BoardColumn[]
   onBack: () => void
   onNavigateToCard: (cardId: string) => void
 }
@@ -34,6 +40,7 @@ interface CardDetailPageProps {
 export default function CardDetailPage({
   card: initialCard,
   workspaceId,
+  columns,
   onBack,
   onNavigateToCard
 }: CardDetailPageProps): JSX.Element {
@@ -44,6 +51,7 @@ export default function CardDetailPage({
 
   const [tags, setTags] = useState<Tag[]>([])
   const [newTagName, setNewTagName] = useState('')
+  const [showTagForm, setShowTagForm] = useState(false)
 
   const [comments, setComments] = useState<Comment[]>([])
   const [newComment, setNewComment] = useState('')
@@ -52,7 +60,14 @@ export default function CardDetailPage({
   const [history, setHistory] = useState<StatusHistoryEntry[]>([])
   const [sessions, setSessions] = useState<StudySession[]>([])
   const [relations, setRelations] = useState<CardRelationView[]>([])
+  const [attachments, setAttachments] = useState<Attachment[]>([])
+  const [subtasks, setSubtasks] = useState<Subtask[]>([])
   const [error, setError] = useState<string | null>(null)
+
+  const [dueDate, setDueDate] = useState(initialCard.dueDate ?? '')
+  const [dueTime, setDueTime] = useState(initialCard.dueTime ?? '')
+  const [dueDirty, setDueDirty] = useState(false)
+  const [savingDue, setSavingDue] = useState(false)
 
   const reloadSessions = useCallback(() => {
     window.api.timer
@@ -72,20 +87,27 @@ export default function CardDetailPage({
     setCard(initialCard)
     setDescription(initialCard.description ?? '')
     setDescriptionDirty(false)
+    setDueDate(initialCard.dueDate ?? '')
+    setDueTime(initialCard.dueTime ?? '')
+    setDueDirty(false)
 
     Promise.all([
       window.api.tags.listForCard(initialCard.id),
       window.api.comments.listByCard(initialCard.id),
       window.api.history.listByCard(initialCard.id),
       window.api.timer.listByCard(initialCard.id),
-      window.api.relations.listByCard(initialCard.id)
+      window.api.relations.listByCard(initialCard.id),
+      window.api.attachments.listByCard(initialCard.id),
+      window.api.subtasks.listByCard(initialCard.id)
     ])
-      .then(([tagList, commentList, historyList, sessionList, relationList]) => {
+      .then(([tagList, commentList, historyList, sessionList, relationList, attachmentList, subtaskList]) => {
         setTags(tagList)
         setComments(commentList)
         setHistory(historyList)
         setSessions(sessionList)
         setRelations(relationList)
+        setAttachments(attachmentList)
+        setSubtasks(subtaskList)
       })
       .catch((err: unknown) => setError(err instanceof Error ? err.message : String(err)))
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -103,9 +125,40 @@ export default function CardDetailPage({
     }
   }
 
-  async function handleChangeStatus(status: CardStatus): Promise<void> {
+  async function handleSaveDueDate(): Promise<void> {
+    setSavingDue(true)
     try {
-      setCard(await window.api.cards.update(card.id, { status }))
+      setCard(
+        await window.api.cards.update(card.id, {
+          dueDate: dueDate || null,
+          dueTime: dueDate && dueTime ? dueTime : null
+        })
+      )
+      setDueDirty(false)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err))
+    } finally {
+      setSavingDue(false)
+    }
+  }
+
+  async function handleClearDueDate(): Promise<void> {
+    setDueDate('')
+    setDueTime('')
+    setSavingDue(true)
+    try {
+      setCard(await window.api.cards.update(card.id, { dueDate: null, dueTime: null }))
+      setDueDirty(false)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err))
+    } finally {
+      setSavingDue(false)
+    }
+  }
+
+  async function handleChangeColumn(columnId: string): Promise<void> {
+    try {
+      setCard(await window.api.cards.update(card.id, { columnId }))
       setHistory(await window.api.history.listByCard(card.id))
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
@@ -117,6 +170,7 @@ export default function CardDetailPage({
     try {
       setTags(await window.api.tags.attachToCard(card.id, newTagName))
       setNewTagName('')
+      setShowTagForm(false)
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
     }
@@ -175,7 +229,18 @@ export default function CardDetailPage({
           </div>
           <span className="card-page__meta">Criado em {formatDateTime(card.createdAt)}</span>
         </div>
-        <StatusBadge status={card.status} />
+        <StatusBadge
+          name={columnName(columns, card.columnId)}
+          isDone={columns.find((c) => c.id === card.columnId)?.isDone}
+        />
+        {card.dueDate && (
+          <span
+            className={`due-badge due-badge--${getDueStatus(card.dueDate, card.dueTime, columns.find((c) => c.id === card.columnId)?.isDone ?? false)}`}
+          >
+            Prazo: {card.dueDate.split('-').reverse().join('/')}
+            {card.dueTime ? ` ${card.dueTime}` : ''}
+          </span>
+        )}
       </header>
 
       {error && <p className="status status--error">{error}</p>}
@@ -183,14 +248,8 @@ export default function CardDetailPage({
       <div className="card-page__body">
         <div className="card-page__main">
           <section className="card-section">
-            <h3>Status</h3>
-            <select value={card.status} onChange={(e) => handleChangeStatus(e.target.value as CardStatus)}>
-              {CARD_STATUSES.map((status) => (
-                <option key={status} value={status}>
-                  {CARD_STATUS_LABELS[status]}
-                </option>
-              ))}
-            </select>
+            <h3>Subtarefas</h3>
+            <CardSubtasks cardId={card.id} subtasks={subtasks} onChanged={setSubtasks} />
           </section>
 
           <section className="card-section">
@@ -210,6 +269,11 @@ export default function CardDetailPage({
                 {savingDescription ? 'Salvando…' : 'Salvar descrição'}
               </button>
             )}
+          </section>
+
+          <section className="card-section">
+            <h3>Arquivos</h3>
+            <CardAttachments cardId={card.id} attachments={attachments} onChanged={setAttachments} />
           </section>
 
           <section className="card-section">
@@ -254,9 +318,9 @@ export default function CardDetailPage({
               {history.map((entry) => (
                 <li key={entry.id}>
                   <span className="history-list__transition">
-                    {entry.fromStatus ? CARD_STATUS_LABELS[entry.fromStatus] : 'Criado'}
+                    {columnName(columns, entry.fromStatus)}
                     {' → '}
-                    {CARD_STATUS_LABELS[entry.toStatus]}
+                    {columnName(columns, entry.toStatus)}
                   </span>
                   <span className="history-list__date">{formatDateTime(entry.changedAt)}</span>
                 </li>
@@ -267,6 +331,50 @@ export default function CardDetailPage({
         </div>
 
         <aside className="card-page__aside">
+          <section className="card-section">
+            <h3>Status</h3>
+            <select value={card.columnId} onChange={(e) => handleChangeColumn(e.target.value)}>
+              {columns.map((column) => (
+                <option key={column.id} value={column.id}>
+                  {column.name}
+                </option>
+              ))}
+            </select>
+          </section>
+
+          <section className="card-section">
+            <h3>Prazo</h3>
+            <div className="due-form">
+              <input
+                type="date"
+                value={dueDate}
+                onChange={(e) => {
+                  setDueDate(e.target.value)
+                  setDueDirty(true)
+                }}
+              />
+              <input
+                type="time"
+                value={dueTime}
+                onChange={(e) => {
+                  setDueTime(e.target.value)
+                  setDueDirty(true)
+                }}
+                disabled={!dueDate}
+              />
+              {dueDirty && (
+                <button className="primary-button" disabled={savingDue} onClick={handleSaveDueDate}>
+                  {savingDue ? 'Salvando…' : 'Salvar prazo'}
+                </button>
+              )}
+              {!dueDirty && card.dueDate && (
+                <button className="link-button" disabled={savingDue} onClick={handleClearDueDate}>
+                  remover prazo
+                </button>
+              )}
+            </div>
+          </section>
+
           <section className="card-section">
             <h3>Cronômetro</h3>
             <CardTimer card={card} onCardUpdated={setCard} onSessionsChanged={reloadSessions} />
@@ -295,22 +403,40 @@ export default function CardDetailPage({
               ))}
               {tags.length === 0 && <span className="empty-hint">Nenhuma tag ainda.</span>}
             </div>
-            <form
-              className="inline-form"
-              onSubmit={(e) => {
-                e.preventDefault()
-                void handleAddTag()
-              }}
-            >
-              <input
-                value={newTagName}
-                onChange={(e) => setNewTagName(e.target.value)}
-                placeholder="Nova tag (ex.: prova, revisão)"
-              />
-              <button type="submit" disabled={!newTagName.trim()}>
-                Adicionar
+            {!showTagForm && (
+              <button className="secondary-button" onClick={() => setShowTagForm(true)}>
+                + Adicionar tag
               </button>
-            </form>
+            )}
+            {showTagForm && (
+              <form
+                className="inline-form"
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  void handleAddTag()
+                }}
+              >
+                <input
+                  autoFocus
+                  value={newTagName}
+                  onChange={(e) => setNewTagName(e.target.value)}
+                  placeholder="Nova tag (ex.: prova, revisão)"
+                />
+                <button type="submit" disabled={!newTagName.trim()}>
+                  Adicionar
+                </button>
+                <button
+                  type="button"
+                  className="link-button"
+                  onClick={() => {
+                    setShowTagForm(false)
+                    setNewTagName('')
+                  }}
+                >
+                  Cancelar
+                </button>
+              </form>
+            )}
           </section>
 
           <section className="card-section">
@@ -318,6 +444,7 @@ export default function CardDetailPage({
             <CardRelations
               workspaceId={workspaceId}
               cardId={card.id}
+              columns={columns}
               relations={relations}
               onAdd={handleAddRelation}
               onRemove={handleRemoveRelation}

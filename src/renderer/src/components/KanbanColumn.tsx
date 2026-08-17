@@ -1,36 +1,49 @@
 import type { ReactNode } from 'react'
-import type { Card, CardStatus } from '@shared/types'
-import { CARD_STATUS_LABELS } from '@shared/types'
+import type { BoardColumn, Card } from '@shared/types'
 import KanbanCard from './KanbanCard'
 
 interface KanbanColumnProps {
-  status: CardStatus
+  column: BoardColumn
   cards: Card[]
+  columnsById: Map<string, BoardColumn>
   isDropTarget: boolean
-  onDragStart: (cardId: string) => void
+  onCardDragStart: (cardId: string) => void
+  onColumnDragStart: (columnId: string) => void
   onDragOverColumn: () => void
   onDropOnColumn: () => void
   onDragOverCard: (index: number) => void
   onDropOnCard: (index: number) => void
   onOpenCard: (card: Card) => void
+  onContextMenu: (e: React.MouseEvent, columnId: string) => void
   headerExtra?: ReactNode
 }
 
+/**
+ * Coluna do quadro Kanban: cards arrastáveis + a própria coluna arrastável
+ * (pega e solta pelo cabeçalho pra reordenar entre as outras — ver
+ * KanbanBoard). Renomear/duplicar/cor/excluir ficam no menu de contexto
+ * (botão direito no cabeçalho) — o cabeçalho é draggable, então clique nele
+ * não funciona pra editar o nome.
+ */
 export default function KanbanColumn({
-  status,
+  column,
   cards,
+  columnsById,
   isDropTarget,
-  onDragStart,
+  onCardDragStart,
+  onColumnDragStart,
   onDragOverColumn,
   onDropOnColumn,
   onDragOverCard,
   onDropOnCard,
   onOpenCard,
+  onContextMenu,
   headerExtra
 }: KanbanColumnProps): JSX.Element {
   return (
     <div
       className={`kanban-column ${isDropTarget ? 'kanban-column--drop-target' : ''}`}
+      style={column.color ? ({ '--column-color': column.color } as React.CSSProperties) : undefined}
       onDragOver={(e) => {
         e.preventDefault()
         onDragOverColumn()
@@ -40,8 +53,14 @@ export default function KanbanColumn({
         onDropOnColumn()
       }}
     >
-      <div className="kanban-column__header">
-        <h3>{CARD_STATUS_LABELS[status]}</h3>
+      <div
+        className="kanban-column__header"
+        draggable
+        onDragStart={() => onColumnDragStart(column.id)}
+        onContextMenu={(e) => onContextMenu(e, column.id)}
+        title="Arraste para reordenar · botão direito para renomear e mais opções"
+      >
+        <h3>{column.name}</h3>
         <span className="kanban-column__count">{cards.length}</span>
       </div>
 
@@ -50,8 +69,9 @@ export default function KanbanColumn({
           <KanbanCard
             key={card.id}
             card={card}
+            column={columnsById.get(card.columnId)}
             index={index}
-            onDragStart={onDragStart}
+            onDragStart={onCardDragStart}
             onDragOverCard={onDragOverCard}
             onDropOnCard={onDropOnCard}
             onOpen={onOpenCard}

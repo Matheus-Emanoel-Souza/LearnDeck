@@ -1,32 +1,18 @@
 import { useEffect, useState } from 'react'
-import type { CardStatus, DashboardSummary } from '@shared/types'
-import { CARD_STATUSES, CARD_STATUS_LABELS } from '@shared/types'
+import type { DashboardSummary } from '@shared/types'
 import { formatDurationLong, formatWeekdayShort } from '../lib/formatDate'
 
 interface DashboardProps {
   workspaceId: string
 }
 
-// Paleta categórica validada (dataviz skill) — ordem fixa, não trocar por
-// card/status: slots 1–6 do tema padrão, na ordem em que os status aparecem
-// no fluxo do Kanban.
-const STATUS_COLORS: Record<CardStatus, string> = {
-  backlog: '#2a78d6',
-  to_study: '#eb6834',
-  studying: '#1baf7a',
-  paused: '#eda100',
-  review: '#e87ba4',
-  done: '#008300'
-}
-
 const AGGREGATE_COLORS = {
   open: '#2a78d6',
-  inProgress: '#eb6834',
   done: '#1baf7a'
 } as const
 
-// Mesma paleta categórica (slots 1–8, ordem fixa) usada para as matérias do
-// gráfico de pizza — a ordem nunca muda por card/matéria, só por posição.
+// Paleta categórica validada (dataviz skill), ciclada por posição da coluna
+// (as colunas são dinâmicas agora, não dá pra fixar cor por nome).
 const SUBJECT_COLORS = [
   '#2a78d6',
   '#eb6834',
@@ -66,7 +52,7 @@ export default function Dashboard({ workspaceId }: DashboardProps): JSX.Element 
   if (error) return <p className="status status--error">{error}</p>
   if (!summary) return <p className="empty-hint">Carregando dashboard…</p>
 
-  const maxStatusCount = Math.max(1, ...CARD_STATUSES.map((s) => summary.byStatus[s]))
+  const maxColumnCount = Math.max(1, ...summary.byColumn.map((c) => c.count))
   const aggregateTotal = Math.max(1, summary.totalCards)
 
   // Pizza: matérias com mais cards abertos primeiro; além do teto de slots,
@@ -139,17 +125,6 @@ export default function Dashboard({ workspaceId }: DashboardProps): JSX.Element 
                   {summary.openCount}
                 </div>
               )}
-              {summary.inProgressCount > 0 && (
-                <div
-                  className="stacked-bar__segment"
-                  style={{
-                    width: `${(summary.inProgressCount / aggregateTotal) * 100}%`,
-                    background: AGGREGATE_COLORS.inProgress
-                  }}
-                >
-                  {summary.inProgressCount}
-                </div>
-              )}
               {summary.doneCount > 0 && (
                 <div
                   className="stacked-bar__segment"
@@ -166,10 +141,6 @@ export default function Dashboard({ workspaceId }: DashboardProps): JSX.Element 
                 Aberto ({summary.openCount})
               </li>
               <li>
-                <span className="chart-legend__swatch" style={{ background: AGGREGATE_COLORS.inProgress }} />
-                Em andamento ({summary.inProgressCount})
-              </li>
-              <li>
                 <span className="chart-legend__swatch" style={{ background: AGGREGATE_COLORS.done }} />
                 Concluído ({summary.doneCount})
               </li>
@@ -181,19 +152,18 @@ export default function Dashboard({ workspaceId }: DashboardProps): JSX.Element 
       <section className="card-section">
         <h3>Cards por status</h3>
         <div className="bar-chart">
-          {CARD_STATUSES.map((status) => {
-            const count = summary.byStatus[status]
-            const widthPct = (count / maxStatusCount) * 100
+          {summary.byColumn.map((column, i) => {
+            const widthPct = (column.count / maxColumnCount) * 100
             return (
-              <div key={status} className="bar-chart__row">
-                <span className="bar-chart__label">{CARD_STATUS_LABELS[status]}</span>
+              <div key={column.columnId} className="bar-chart__row">
+                <span className="bar-chart__label">{column.columnName}</span>
                 <div className="bar-chart__track">
                   <div
                     className="bar-chart__fill"
-                    style={{ width: `${widthPct}%`, background: STATUS_COLORS[status] }}
+                    style={{ width: `${widthPct}%`, background: SUBJECT_COLORS[i % SUBJECT_COLORS.length] }}
                   />
                 </div>
-                <span className="bar-chart__value">{count}</span>
+                <span className="bar-chart__value">{column.count}</span>
               </div>
             )
           })}

@@ -1,16 +1,18 @@
 import type Database from 'better-sqlite3'
 import { randomUUID } from 'node:crypto'
-import type { Card, CardStatus, CardSummary, CreateCardInput, UpdateCardInput } from '@shared/types'
+import type { Card, CardSummary, CreateCardInput, UpdateCardInput } from '@shared/types'
 
 interface CardRow {
   id: string
   group_id: string
   title: string
   description: string | null
-  status: CardStatus
+  column_id: string
   position: number
   total_study_seconds: number
   pomodoros_completed: number
+  due_date: string | null
+  due_time: string | null
   created_at: string
   updated_at: string
   deleted_at: string | null
@@ -22,14 +24,27 @@ function toCard(row: CardRow): Card {
     groupId: row.group_id,
     title: row.title,
     description: row.description,
-    status: row.status,
+    columnId: row.column_id,
     position: row.position,
     totalStudySeconds: row.total_study_seconds,
     pomodorosCompleted: row.pomodoros_completed,
+    dueDate: row.due_date,
+    dueTime: row.due_time,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     deletedAt: row.deleted_at
   }
+}
+
+export function getWorkspaceIdForCard(db: Database.Database, cardId: string): string | undefined {
+  const row = db
+    .prepare(
+      `SELECT g.workspace_id AS workspace_id FROM cards c
+       JOIN groups g ON g.id = c.group_id
+       WHERE c.id = ?`
+    )
+    .get(cardId) as { workspace_id: string } | undefined
+  return row?.workspace_id
 }
 
 export function getCard(db: Database.Database, id: string): Card | undefined {
@@ -60,7 +75,8 @@ export function listCardsByGroups(db: Database.Database, groupIds: string[]): Ca
   return rows.map(toCard)
 }
 
-export function insertCardRow(db: Database.Database, input: CreateCardInput): Card {
+/** Cria o card na coluna informada (o CardService resolve a coluna padrão do workspace). */
+export function insertCardRow(db: Database.Database, input: CreateCardInput, columnId: string): Card {
   const now = new Date().toISOString()
   const nextPosition = (
     db
@@ -76,20 +92,60 @@ export function insertCardRow(db: Database.Database, input: CreateCardInput): Ca
     group_id: input.groupId,
     title: input.title.trim(),
     description: input.description ?? null,
-    status: 'backlog',
+    column_id: columnId,
     position: nextPosition,
     total_study_seconds: 0,
     pomodoros_completed: 0,
+    due_date: input.dueDate ?? null,
+    due_time: input.dueTime ?? null,
     created_at: now,
     updated_at: now,
     deleted_at: null
   }
 
   db.prepare(
-    `INSERT INTO cards (id, group_id, title, description, status, position, total_study_seconds,
-       pomodoros_completed, created_at, updated_at, deleted_at)
-     VALUES (@id, @group_id, @title, @description, @status, @position, @total_study_seconds,
-       @pomodoros_completed, @created_at, @updated_at, @deleted_at)`
+    `INSERT INTO cards (id, group_id, title, description, column_id, position, total_study_seconds,
+       pomodoros_completed, due_date, due_time, created_at, updated_at, deleted_at)
+     VALUES (@id, @group_id, @title, @description, @column_id, @position, @total_study_seconds,
+       @pomodoros_completed, @due_date, @due_time, @created_at, @updated_at, @deleted_at)`
+  ).run(row)
+
+  return toCard(row)
+}
+
+/** Cards não excluídos de uma coluna, workspace inteiro (colunas não são por grupo). */
+export function listCardsByColumnId(db: Database.Database, columnId: string): Card[] {
+  const rows = db
+    .prepare('SELECT * FROM cards WHERE column_id = ? AND deleted_at IS NULL')
+    .all(columnId) as CardRow[]
+  return rows.map(toCard)
+}
+
+/** Duplica um card (novo id, mesmo título/descrição/grupo/posição) numa coluna
+ * de destino, com estatísticas zeradas — usado por "Duplicar coluna". */
+export function duplicateCardRow(db: Database.Database, source: Card, columnId: string): Card {
+  const now = new Date().toISOString()
+  const row: CardRow = {
+    id: randomUUID(),
+    group_id: source.groupId,
+    title: source.title,
+    description: source.description,
+    column_id: columnId,
+    position: source.position,
+    total_study_seconds: 0,
+    pomodoros_completed: 0,
+    due_date: source.dueDate,
+    due_time: source.dueTime,
+    created_at: now,
+    updated_at: now,
+    deleted_at: null
+  }
+
+  db.prepare(
+    `INSERT INTO cards (id, group_id, title, description, column_id, position, total_study_seconds,
+       pomodoros_completed, due_date, due_time, created_at, updated_at, deleted_at)
+     VALUES (@id, @group_id, @title, @description, @column_id, @position, @total_study_seconds,
+       @pomodoros_completed, @due_date, @due_time, @created_at, @updated_at, @deleted_at)`
   ).run(row)
 
   return toCard(row)
@@ -103,17 +159,33 @@ export function updateCardRow(db: Database.Database, id: string, patch: UpdateCa
     ...current,
     title: patch.title?.trim() ?? current.title,
     description: patch.description !== undefined ? patch.description : current.description,
-    status: patch.status ?? current.status,
+    column_id: patch.columnId ?? current.column_id,
     position: patch.position ?? current.position,
+    due_date: patch.dueDate !== undefined ? patch.dueDate : current.due_date,
+    due_time: patch.dueTime !== undefined ? patch.dueTime : current.due_time,
     updated_at: new Date().toISOString()
   }
 
   db.prepare(
-    `UPDATE cards SET title = @title, description = @description, status = @status,
-       position = @position, updated_at = @updated_at WHERE id = @id`
+    `UPDATE cards SET title = @title, description = @description, column_id = @column_id,
+       position = @position, due_date = @due_date, due_time = @due_time, updated_at = @updated_at
+       WHERE id = @id`
   ).run(updated)
 
   return toCard(updated)
+}
+
+/** Cards não excluídos do workspace que têm prazo definido — usado pelo
+ * calendário e pelo scan de notificações de atraso. */
+export function listCardsWithDueDate(db: Database.Database, workspaceId: string): Card[] {
+  const rows = db
+    .prepare(
+      `SELECT c.* FROM cards c
+       JOIN groups g ON g.id = c.group_id
+       WHERE g.workspace_id = ? AND c.deleted_at IS NULL AND c.due_date IS NOT NULL`
+    )
+    .all(workspaceId) as CardRow[]
+  return rows.map(toCard)
 }
 
 export function softDeleteCard(db: Database.Database, id: string): void {
@@ -144,7 +216,7 @@ export function searchCardsInWorkspace(
 ): CardSummary[] {
   const rows = db
     .prepare(
-      `SELECT c.id, c.group_id, c.title, c.status FROM cards c
+      `SELECT c.id, c.group_id, c.title, c.column_id FROM cards c
        JOIN groups g ON g.id = c.group_id
        WHERE g.workspace_id = ? AND c.deleted_at IS NULL AND c.id != ?
          AND c.title LIKE ? ESCAPE '\\'
@@ -155,10 +227,10 @@ export function searchCardsInWorkspace(
     id: string
     group_id: string
     title: string
-    status: CardStatus
+    column_id: string
   }>
 
-  return rows.map((row) => ({ id: row.id, groupId: row.group_id, title: row.title, status: row.status }))
+  return rows.map((row) => ({ id: row.id, groupId: row.group_id, title: row.title, columnId: row.column_id }))
 }
 
 /** Todos os cards do workspace, em resumo — usado pelo seletor "relacionar com" para listar tudo de uma vez. */
@@ -169,7 +241,7 @@ export function listAllCardSummariesInWorkspace(
 ): CardSummary[] {
   const rows = db
     .prepare(
-      `SELECT c.id, c.group_id, c.title, c.status FROM cards c
+      `SELECT c.id, c.group_id, c.title, c.column_id FROM cards c
        JOIN groups g ON g.id = c.group_id
        WHERE g.workspace_id = ? AND c.deleted_at IS NULL AND c.id != ?
        ORDER BY c.title ASC`
@@ -178,10 +250,10 @@ export function listAllCardSummariesInWorkspace(
     id: string
     group_id: string
     title: string
-    status: CardStatus
+    column_id: string
   }>
 
-  return rows.map((row) => ({ id: row.id, groupId: row.group_id, title: row.title, status: row.status }))
+  return rows.map((row) => ({ id: row.id, groupId: row.group_id, title: row.title, columnId: row.column_id }))
 }
 
 /** Todos os cards não excluídos de um workspace (usado pelo dashboard para contagens/agregações). */
@@ -196,7 +268,7 @@ export function listCardsForWorkspace(db: Database.Database, workspaceId: string
   return rows.map(toCard)
 }
 
-/** Cards abertos (status != done) agrupados pela matéria (grupo raiz) — gráfico de pizza do dashboard. */
+/** Cards abertos (coluna sem is_done) agrupados pela matéria (grupo raiz) — gráfico de pizza do dashboard. */
 export function countOpenCardsBySubject(
   db: Database.Database,
   workspaceId: string
@@ -213,7 +285,8 @@ export function countOpenCardsBySubject(
        SELECT gr.root_id AS group_id, root.name AS group_name, COUNT(c.id) AS open_count
        FROM group_roots gr
        JOIN groups root ON root.id = gr.root_id
-       JOIN cards c ON c.group_id = gr.id AND c.deleted_at IS NULL AND c.status != 'done'
+       JOIN cards c ON c.group_id = gr.id AND c.deleted_at IS NULL
+       JOIN board_columns bc ON bc.id = c.column_id AND bc.is_done = 0
        GROUP BY gr.root_id, root.name
        ORDER BY root.name ASC`
     )
@@ -245,11 +318,11 @@ export function countCardsCreatedByDay(
 export function insertStatusHistory(
   db: Database.Database,
   cardId: string,
-  fromStatus: CardStatus | null,
-  toStatus: CardStatus
+  fromColumnId: string | null,
+  toColumnId: string
 ): void {
   db.prepare(
     `INSERT INTO status_history (id, card_id, from_status, to_status, changed_at)
      VALUES (?, ?, ?, ?, ?)`
-  ).run(randomUUID(), cardId, fromStatus, toStatus, new Date().toISOString())
+  ).run(randomUUID(), cardId, fromColumnId, toColumnId, new Date().toISOString())
 }

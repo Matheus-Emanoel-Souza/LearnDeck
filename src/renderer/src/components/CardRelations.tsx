@@ -1,11 +1,13 @@
 import { useMemo, useState } from 'react'
-import type { CardRelationType, CardRelationView, CardSummary } from '@shared/types'
+import type { BoardColumn, CardRelationType, CardRelationView, CardSummary } from '@shared/types'
 import { CARD_RELATION_TYPES, CARD_RELATION_TYPE_LABELS } from '@shared/types'
+import { columnIsDone, columnName } from '../lib/columns'
 import StatusBadge from './StatusBadge'
 
 interface CardRelationsProps {
   workspaceId: string
   cardId: string
+  columns: BoardColumn[]
   relations: CardRelationView[]
   onAdd: (relatedCardId: string, relationType: CardRelationType) => Promise<void>
   onRemove: (id: string) => Promise<void>
@@ -22,6 +24,7 @@ interface CardRelationsProps {
 export default function CardRelations({
   workspaceId,
   cardId,
+  columns,
   relations,
   onAdd,
   onRemove,
@@ -81,7 +84,10 @@ export default function CardRelations({
               <button className="relation-item__title" onClick={() => onOpenCard(rel.card.id)}>
                 {rel.card.title}
               </button>
-              <StatusBadge status={rel.card.status} />
+              <StatusBadge
+                name={columnName(columns, rel.card.columnId)}
+                isDone={columnIsDone(columns, rel.card.columnId)}
+              />
             </div>
             <button className="link-button" onClick={() => onRemove(rel.id)} title="Remover relação">
               remover
@@ -121,7 +127,10 @@ export default function CardRelations({
                   <li key={c.id}>
                     <button type="button" disabled={busy} onClick={() => handleAdd(c)}>
                       <span>{c.title}</span>
-                      <StatusBadge status={c.status} />
+                      <StatusBadge
+                        name={columnName(columns, c.columnId)}
+                        isDone={columnIsDone(columns, c.columnId)}
+                      />
                     </button>
                   </li>
                 ))}

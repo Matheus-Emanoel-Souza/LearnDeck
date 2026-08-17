@@ -8,19 +8,32 @@ import {
   softDeleteCard,
   updateCardRow
 } from '../repositories/cardRepository'
+import { getDefaultBoardColumn } from '../repositories/boardColumnRepository'
+
+function getWorkspaceIdForGroup(db: Database.Database, groupId: string): string {
+  const row = db.prepare('SELECT workspace_id FROM groups WHERE id = ?').get(groupId) as
+    | { workspace_id: string }
+    | undefined
+  if (!row) throw new Error(`Grupo não encontrado: ${groupId}`)
+  return row.workspace_id
+}
 
 /**
  * Regra de negócio: criar um card grava a linha inicial do histórico
- * (from_status = NULL -> to_status = 'backlog'); mudar o status de um card
- * grava uma nova linha de histórico — sempre dentro da mesma transação que a
- * própria mudança, para nunca ficar um card sem o rastro correspondente.
+ * (from_status = NULL -> to_status = coluna inicial); mudar a coluna de um
+ * card grava uma nova linha de histórico — sempre dentro da mesma transação
+ * que a própria mudança, para nunca ficar um card sem o rastro correspondente.
  */
 export function createCard(db: Database.Database, input: CreateCardInput): Card {
   if (!input.title.trim()) throw new Error('Título do card é obrigatório')
 
   const run = db.transaction(() => {
-    const card = insertCardRow(db, input)
-    insertStatusHistory(db, card.id, null, card.status)
+    const workspaceId = getWorkspaceIdForGroup(db, input.groupId)
+    const defaultColumn = getDefaultBoardColumn(db, workspaceId)
+    if (!defaultColumn) throw new Error('Workspace sem colunas configuradas')
+
+    const card = insertCardRow(db, input, defaultColumn.id)
+    insertStatusHistory(db, card.id, null, card.columnId)
     return card
   })
 
@@ -34,8 +47,8 @@ export function updateCard(db: Database.Database, id: string, patch: UpdateCardI
 
     const after = updateCardRow(db, id, patch)
 
-    if (patch.status && patch.status !== before.status) {
-      insertStatusHistory(db, id, before.status, patch.status)
+    if (patch.columnId && patch.columnId !== before.columnId) {
+      insertStatusHistory(db, id, before.columnId, patch.columnId)
     }
 
     return after

@@ -1,11 +1,11 @@
 import type Database from 'better-sqlite3'
-import type { CardStatus, DailyCardCount, DashboardSummary } from '@shared/types'
-import { CARD_STATUSES } from '@shared/types'
+import type { ColumnCardCount, DailyCardCount, DashboardSummary } from '@shared/types'
 import {
   countCardsCreatedByDay,
   countOpenCardsBySubject,
   listCardsForWorkspace
 } from '../repositories/cardRepository'
+import { listBoardColumns } from '../repositories/boardColumnRepository'
 import { countCompletedFocusPomodorosForWorkspace } from '../repositories/pomodoroRepository'
 import { sumClosedSessionSecondsForWorkspace } from '../repositories/studySessionRepository'
 
@@ -30,43 +30,32 @@ function buildOpenedTrend(db: Database.Database, workspaceId: string): DailyCard
   return lastNDays(OPENED_TREND_DAYS).map((date) => ({ date, count: countByDate.get(date) ?? 0 }))
 }
 
-/**
- * "Aberto" = ainda não começou (backlog, a estudar); "Em andamento" = já em
- * algum ponto do fluxo (estudando, pausado, revisar); "Concluído" = done.
- * Ver docs/roadmap.md — agrupamento pensado pro dashboard pedido pelo usuário.
- */
-function groupStatus(status: CardStatus): 'open' | 'inProgress' | 'done' {
-  if (status === 'backlog' || status === 'to_study') return 'open'
-  if (status === 'done') return 'done'
-  return 'inProgress'
-}
-
 export function getDashboardSummary(db: Database.Database, workspaceId: string): DashboardSummary {
   const cards = listCardsForWorkspace(db, workspaceId)
+  const columns = listBoardColumns(db, workspaceId)
+  const isDoneByColumn = new Map(columns.map((c) => [c.id, c.isDone]))
 
-  const byStatus = CARD_STATUSES.reduce(
-    (acc, status) => ({ ...acc, [status]: 0 }),
-    {} as Record<CardStatus, number>
-  )
-
+  const countByColumn = new Map<string, number>(columns.map((c) => [c.id, 0]))
   let openCount = 0
-  let inProgressCount = 0
   let doneCount = 0
 
   for (const card of cards) {
-    byStatus[card.status] += 1
-    const group = groupStatus(card.status)
-    if (group === 'open') openCount += 1
-    else if (group === 'inProgress') inProgressCount += 1
-    else doneCount += 1
+    countByColumn.set(card.columnId, (countByColumn.get(card.columnId) ?? 0) + 1)
+    if (isDoneByColumn.get(card.columnId)) doneCount += 1
+    else openCount += 1
   }
+
+  const byColumn: ColumnCardCount[] = columns.map((column) => ({
+    columnId: column.id,
+    columnName: column.name,
+    count: countByColumn.get(column.id) ?? 0
+  }))
 
   return {
     totalCards: cards.length,
     openCount,
-    inProgressCount,
     doneCount,
-    byStatus,
+    byColumn,
     totalStudySeconds: sumClosedSessionSecondsForWorkspace(db, workspaceId),
     totalPomodoros: countCompletedFocusPomodorosForWorkspace(db, workspaceId),
     openCardsBySubject: countOpenCardsBySubject(db, workspaceId),

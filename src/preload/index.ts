@@ -2,14 +2,20 @@ import { contextBridge, ipcRenderer } from 'electron'
 import type { IpcRendererEvent } from 'electron'
 import type { AppInfo } from '../main/ipc/app'
 import type {
+  AppNotification,
+  Attachment,
+  BoardColumn,
+  CalendarItem,
   Card,
   CardRelation,
   CardRelationView,
   CardSummary,
   Comment,
+  CreateBoardColumnInput,
   CreateCardInput,
   CreateCardRelationInput,
   CreateGroupInput,
+  CreateSubtaskInput,
   DashboardSummary,
   Group,
   Pomodoro,
@@ -17,11 +23,14 @@ import type {
   PomodoroKind,
   StatusHistoryEntry,
   StudySession,
+  Subtask,
   Tag,
+  UpdateBoardColumnInput,
   UpdateCardInput,
   UpdateGroupInput,
   UpdatePomodoroConfigInput,
-  UpdateStatus
+  UpdateStatus,
+  UpdateSubtaskInput
 } from '@shared/types'
 
 /**
@@ -40,6 +49,20 @@ const api = {
       ipcRenderer.invoke('groups:update', id, patch),
     delete: (id: string): Promise<void> => ipcRenderer.invoke('groups:delete', id)
   },
+  boardColumns: {
+    list: (workspaceId: string): Promise<BoardColumn[]> =>
+      ipcRenderer.invoke('boardColumns:list', workspaceId),
+    create: (input: CreateBoardColumnInput): Promise<BoardColumn> =>
+      ipcRenderer.invoke('boardColumns:create', input),
+    update: (id: string, patch: UpdateBoardColumnInput): Promise<BoardColumn> =>
+      ipcRenderer.invoke('boardColumns:update', id, patch),
+    move: (id: string, direction: 'left' | 'right'): Promise<BoardColumn[]> =>
+      ipcRenderer.invoke('boardColumns:move', id, direction),
+    delete: (id: string): Promise<void> => ipcRenderer.invoke('boardColumns:delete', id),
+    reorder: (workspaceId: string, orderedIds: string[]): Promise<BoardColumn[]> =>
+      ipcRenderer.invoke('boardColumns:reorder', workspaceId, orderedIds),
+    duplicate: (id: string): Promise<BoardColumn> => ipcRenderer.invoke('boardColumns:duplicate', id)
+  },
   cards: {
     listByGroup: (groupId: string): Promise<Card[]> => ipcRenderer.invoke('cards:listByGroup', groupId),
     get: (id: string): Promise<Card | undefined> => ipcRenderer.invoke('cards:get', id),
@@ -51,6 +74,41 @@ const api = {
       ipcRenderer.invoke('cards:search', workspaceId, query, excludeCardId),
     listAllSummaries: (workspaceId: string, excludeCardId: string): Promise<CardSummary[]> =>
       ipcRenderer.invoke('cards:listAllSummaries', workspaceId, excludeCardId)
+  },
+  attachments: {
+    listByCard: (cardId: string): Promise<Attachment[]> =>
+      ipcRenderer.invoke('attachments:listByCard', cardId),
+    pickAndAdd: (cardId: string): Promise<Attachment[]> =>
+      ipcRenderer.invoke('attachments:pickAndAdd', cardId),
+    open: (id: string): Promise<void> => ipcRenderer.invoke('attachments:open', id),
+    remove: (id: string): Promise<void> => ipcRenderer.invoke('attachments:remove', id)
+  },
+  subtasks: {
+    listByCard: (cardId: string): Promise<Subtask[]> => ipcRenderer.invoke('subtasks:listByCard', cardId),
+    create: (input: CreateSubtaskInput): Promise<Subtask> => ipcRenderer.invoke('subtasks:create', input),
+    update: (id: string, patch: UpdateSubtaskInput): Promise<Subtask> =>
+      ipcRenderer.invoke('subtasks:update', id, patch),
+    delete: (id: string): Promise<void> => ipcRenderer.invoke('subtasks:delete', id)
+  },
+  notifications: {
+    list: (workspaceId: string): Promise<AppNotification[]> =>
+      ipcRenderer.invoke('notifications:list', workspaceId),
+    countUnread: (workspaceId: string): Promise<number> =>
+      ipcRenderer.invoke('notifications:countUnread', workspaceId),
+    markRead: (id: string): Promise<void> => ipcRenderer.invoke('notifications:markRead', id),
+    markAllRead: (workspaceId: string): Promise<void> =>
+      ipcRenderer.invoke('notifications:markAllRead', workspaceId),
+    scanNow: (workspaceId: string): Promise<void> => ipcRenderer.invoke('notifications:scanNow', workspaceId),
+    /** Assina o aviso "entrou notificação nova" empurrado pelo main; retorna a função de cancelar. */
+    onChanged: (callback: () => void): (() => void) => {
+      const listener = (): void => callback()
+      ipcRenderer.on('notifications:changed', listener)
+      return () => ipcRenderer.removeListener('notifications:changed', listener)
+    }
+  },
+  calendar: {
+    getItems: (workspaceId: string): Promise<CalendarItem[]> =>
+      ipcRenderer.invoke('calendar:getItems', workspaceId)
   },
   comments: {
     listByCard: (cardId: string): Promise<Comment[]> => ipcRenderer.invoke('comments:listByCard', cardId),
