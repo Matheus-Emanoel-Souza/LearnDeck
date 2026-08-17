@@ -4,7 +4,6 @@ import type {
   CardRelation,
   CardRelationType,
   CardRelationView,
-  CardStatus,
   CreateCardRelationInput
 } from '@shared/types'
 
@@ -34,7 +33,7 @@ function toRelation(row: CardRelationRow): CardRelation {
 export function listRelationsForCard(db: Database.Database, cardId: string): CardRelationView[] {
   const outgoing = db
     .prepare(
-      `SELECT r.id, r.relation_type, r.created_at, c.id AS card_id, c.group_id, c.title, c.status
+      `SELECT r.id, r.relation_type, r.created_at, c.id AS card_id, c.group_id, c.title, c.column_id
        FROM card_relations r
        JOIN cards c ON c.id = r.related_card_id
        WHERE r.card_id = ?`
@@ -46,12 +45,12 @@ export function listRelationsForCard(db: Database.Database, cardId: string): Car
     card_id: string
     group_id: string
     title: string
-    status: CardStatus
+    column_id: string
   }>
 
   const incoming = db
     .prepare(
-      `SELECT r.id, r.relation_type, r.created_at, c.id AS card_id, c.group_id, c.title, c.status
+      `SELECT r.id, r.relation_type, r.created_at, c.id AS card_id, c.group_id, c.title, c.column_id
        FROM card_relations r
        JOIN cards c ON c.id = r.card_id
        WHERE r.related_card_id = ?`
@@ -63,7 +62,7 @@ export function listRelationsForCard(db: Database.Database, cardId: string): Car
     card_id: string
     group_id: string
     title: string
-    status: CardStatus
+    column_id: string
   }>
 
   const toView = (
@@ -74,7 +73,7 @@ export function listRelationsForCard(db: Database.Database, cardId: string): Car
     relationType: row.relation_type,
     direction,
     createdAt: row.created_at,
-    card: { id: row.card_id, groupId: row.group_id, title: row.title, status: row.status }
+    card: { id: row.card_id, groupId: row.group_id, title: row.title, columnId: row.column_id }
   })
 
   return [

@@ -1,9 +1,11 @@
-import type { Card } from '@shared/types'
+import type { BoardColumn, Card } from '@shared/types'
+import { formatDueDate, getDueStatus } from '../lib/dueStatus'
 import StatusBadge from './StatusBadge'
 import CardIdBadge from './CardIdBadge'
 
 interface KanbanCardProps {
   card: Card
+  column: BoardColumn | undefined
   onDragStart: (cardId: string) => void
   onDragOverCard: (index: number) => void
   onDropOnCard: (index: number) => void
@@ -13,6 +15,7 @@ interface KanbanCardProps {
 
 export default function KanbanCard({
   card,
+  column,
   onDragStart,
   onDragOverCard,
   onDropOnCard,
@@ -41,10 +44,16 @@ export default function KanbanCard({
           <h4>{card.title}</h4>
           <CardIdBadge id={card.id} />
         </div>
-        <StatusBadge status={card.status} />
+        <StatusBadge name={column?.name ?? '—'} isDone={column?.isDone} />
       </div>
 
       {card.description && <p className="kanban-card__description">{card.description}</p>}
+
+      {card.dueDate && (
+        <span className={`due-badge due-badge--${getDueStatus(card.dueDate, card.dueTime, column?.isDone ?? false)}`}>
+          {formatDueDate(card.dueDate, card.dueTime)}
+        </span>
+      )}
 
       <div className="kanban-card__footer">
         <span>

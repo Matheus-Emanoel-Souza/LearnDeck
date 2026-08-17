@@ -23,6 +23,19 @@ export function formatWeekdayShort(isoDate: string): string {
   return date.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', '')
 }
 
+/** Bytes -> "1.2 MB" / "340 KB" / "80 B", pra tamanho de anexo. */
+export function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`
+  const units = ['KB', 'MB', 'GB']
+  let value = bytes / 1024
+  let unitIndex = 0
+  while (value >= 1024 && unitIndex < units.length - 1) {
+    value /= 1024
+    unitIndex += 1
+  }
+  return `${value.toFixed(value < 10 ? 1 : 0)} ${units[unitIndex]}`
+}
+
 /** Segundos -> "MM:SS" ou "H:MM:SS", para cronômetro/Pomodoro em tempo real. */
 export function formatClock(totalSeconds: number): string {
   const seconds = Math.max(0, Math.round(totalSeconds))

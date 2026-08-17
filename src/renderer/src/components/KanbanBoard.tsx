@@ -1,59 +1,152 @@
 import { useState } from 'react'
-import type { Card, CardStatus } from '@shared/types'
-import { CARD_STATUSES } from '@shared/types'
-import { groupCardsByStatus } from '../lib/kanban'
+import type { BoardColumn, Card } from '@shared/types'
+import { groupCardsByColumn } from '../lib/kanban'
 import KanbanColumn from './KanbanColumn'
 import NewCardForm from './NewCardForm'
+import ColumnContextMenu from './ColumnContextMenu'
+import NewColumnMenu from './NewColumnMenu'
 
 interface KanbanBoardProps {
   cards: Card[]
-  onMoveCard: (cardId: string, targetStatus: CardStatus, targetIndex: number | null) => Promise<void>
-  onCreateCard: (title: string, description: string | null) => Promise<void>
+  columns: BoardColumn[]
+  onMoveCard: (cardId: string, targetColumnId: string, targetIndex: number | null) => Promise<void>
+  onCreateCard: (
+    title: string,
+    description: string | null,
+    dueDate: string | null,
+    dueTime: string | null
+  ) => Promise<void>
   onOpenCard: (card: Card) => void
+  onCreateColumn: (name: string) => Promise<void>
+  onRenameColumn: (id: string, name: string) => Promise<void>
+  onReorderColumns: (orderedIds: string[]) => Promise<void>
+  onDuplicateColumn: (id: string) => Promise<void>
+  onSetColumnColor: (id: string, color: string | null) => Promise<void>
+  onDeleteColumn: (id: string) => Promise<void>
 }
 
 /**
- * Quadro Kanban: colunas fixas por status, cards arrastáveis entre e dentro
- * de colunas (drag-and-drop nativo, sem dependência extra). Novos cards
- * sempre entram em "Backlog" (regra do CardService), por isso o formulário
- * de criação fica só nessa coluna.
+ * Quadro Kanban: colunas dinâmicas (nome/cor/ordem editáveis pelo usuário —
+ * arraste o cabeçalho pra reordenar, botão direito pra duplicar/colorir/
+ * excluir), cards arrastáveis entre e dentro delas (drag-and-drop nativo,
+ * sem dependência extra). Novos cards sempre entram na primeira coluna
+ * (regra do CardService).
  */
 export default function KanbanBoard({
   cards,
+  columns,
   onMoveCard,
   onCreateCard,
-  onOpenCard
+  onOpenCard,
+  onCreateColumn,
+  onRenameColumn,
+  onReorderColumns,
+  onDuplicateColumn,
+  onSetColumnColor,
+  onDeleteColumn
 }: KanbanBoardProps): JSX.Element {
   const [draggedCardId, setDraggedCardId] = useState<string | null>(null)
-  const [dropTargetStatus, setDropTargetStatus] = useState<CardStatus | null>(null)
+  const [draggedColumnId, setDraggedColumnId] = useState<string | null>(null)
+  const [dropTargetColumnId, setDropTargetColumnId] = useState<string | null>(null)
+  const [contextMenu, setContextMenu] = useState<{ columnId: string; x: number; y: number } | null>(null)
+  const [newColumnMenu, setNewColumnMenu] = useState<{ x: number; y: number } | null>(null)
 
-  const byStatus = groupCardsByStatus(cards)
+  const byColumn = groupCardsByColumn(cards, columns)
+  const columnsById = new Map(columns.map((c) => [c.id, c]))
 
-  async function finishDrop(targetStatus: CardStatus, targetIndex: number | null): Promise<void> {
-    const cardId = draggedCardId
+  function clearDrag(): void {
     setDraggedCardId(null)
-    setDropTargetStatus(null)
+    setDraggedColumnId(null)
+    setDropTargetColumnId(null)
+  }
+
+  async function finishDrop(targetColumnId: string, targetIndex: number | null): Promise<void> {
+    if (draggedColumnId) {
+      const draggedId = draggedColumnId
+      clearDrag()
+      if (draggedId === targetColumnId) return
+      const order = columns.map((c) => c.id).filter((id) => id !== draggedId)
+      const targetIdx = order.indexOf(targetColumnId)
+      order.splice(targetIdx, 0, draggedId)
+      await onReorderColumns(order)
+      return
+    }
+
+    const cardId = draggedCardId
+    clearDrag()
     if (!cardId) return
-    await onMoveCard(cardId, targetStatus, targetIndex)
+    await onMoveCard(cardId, targetColumnId, targetIndex)
   }
 
   return (
     <div className="kanban-board">
-      {CARD_STATUSES.map((status) => (
+      {columns.map((column) => (
         <KanbanColumn
-          key={status}
-          status={status}
-          cards={byStatus.get(status) ?? []}
-          isDropTarget={dropTargetStatus === status}
-          onDragStart={setDraggedCardId}
-          onDragOverColumn={() => setDropTargetStatus(status)}
-          onDropOnColumn={() => void finishDrop(status, null)}
-          onDragOverCard={() => setDropTargetStatus(status)}
-          onDropOnCard={(index) => void finishDrop(status, index)}
+          key={column.id}
+          column={column}
+          cards={byColumn.get(column.id) ?? []}
+          columnsById={columnsById}
+          isDropTarget={dropTargetColumnId === column.id}
+          onCardDragStart={setDraggedCardId}
+          onColumnDragStart={setDraggedColumnId}
+          onDragOverColumn={() => setDropTargetColumnId(column.id)}
+          onDropOnColumn={() => void finishDrop(column.id, null)}
+          onDragOverCard={() => setDropTargetColumnId(column.id)}
+          onDropOnCard={(index) => void finishDrop(column.id, index)}
           onOpenCard={onOpenCard}
-          headerExtra={status === 'backlog' ? <NewCardForm onCreate={onCreateCard} /> : undefined}
+          onContextMenu={(e, columnId) => {
+            e.preventDefault()
+            setContextMenu({ columnId, x: e.clientX, y: e.clientY })
+          }}
+          headerExtra={columns[0]?.id === column.id ? <NewCardForm onCreate={onCreateCard} /> : undefined}
         />
       ))}
+
+      <div
+        className="kanban-board__spacer"
+        onContextMenu={(e) => {
+          e.preventDefault()
+          setNewColumnMenu({ x: e.clientX, y: e.clientY })
+        }}
+      />
+
+      {contextMenu && (
+        <ColumnContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          currentName={columnsById.get(contextMenu.columnId)?.name ?? ''}
+          onRename={(name) => {
+            void onRenameColumn(contextMenu.columnId, name)
+            setContextMenu(null)
+          }}
+          onCreateColumn={(name) => {
+            void onCreateColumn(name)
+            setContextMenu(null)
+          }}
+          onDuplicate={() => {
+            void onDuplicateColumn(contextMenu.columnId)
+            setContextMenu(null)
+          }}
+          onSetColor={(color) => {
+            void onSetColumnColor(contextMenu.columnId, color)
+            setContextMenu(null)
+          }}
+          onDelete={() => {
+            void onDeleteColumn(contextMenu.columnId)
+            setContextMenu(null)
+          }}
+          onClose={() => setContextMenu(null)}
+        />
+      )}
+
+      {newColumnMenu && (
+        <NewColumnMenu
+          x={newColumnMenu.x}
+          y={newColumnMenu.y}
+          onCreate={(name) => void onCreateColumn(name)}
+          onClose={() => setNewColumnMenu(null)}
+        />
+      )}
     </div>
   )
 }

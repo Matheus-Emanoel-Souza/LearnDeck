@@ -4,24 +4,20 @@
  * Ver docs/database.md para o schema completo por trás desses tipos.
  */
 
-export type CardStatus = 'backlog' | 'to_study' | 'studying' | 'paused' | 'review' | 'done'
-
-export const CARD_STATUSES: CardStatus[] = [
-  'backlog',
-  'to_study',
-  'studying',
-  'paused',
-  'review',
-  'done'
-]
-
-export const CARD_STATUS_LABELS: Record<CardStatus, string> = {
-  backlog: 'Backlog',
-  to_study: 'A estudar',
-  studying: 'Estudando',
-  paused: 'Pausado',
-  review: 'Revisar',
-  done: 'Concluído'
+/**
+ * Coluna do quadro Kanban (antes um enum fixo de status; agora dado por
+ * workspace, editável pelo usuário — nome, posição e a flag `isDone`, que
+ * marca quais colunas contam como "concluído" no dashboard).
+ */
+export interface BoardColumn {
+  id: string
+  workspaceId: string
+  name: string
+  position: number
+  isDone: boolean
+  color: string | null
+  createdAt: string
+  updatedAt: string
 }
 
 export interface Workspace {
@@ -47,20 +43,68 @@ export interface Card {
   groupId: string
   title: string
   description: string | null
-  status: CardStatus
+  columnId: string
   position: number
   totalStudySeconds: number
   pomodorosCompleted: number
+  /** 'YYYY-MM-DD', opcional. */
+  dueDate: string | null
+  /** 'HH:MM', opcional — só faz sentido junto de dueDate. */
+  dueTime: string | null
   createdAt: string
   updatedAt: string
   deletedAt: string | null
 }
 
+/** Subtarefa de um card: prazo próprio (opcional), independente do prazo do card-pai. */
+export interface Subtask {
+  id: string
+  cardId: string
+  title: string
+  isDone: boolean
+  dueDate: string | null
+  dueTime: string | null
+  position: number
+  createdAt: string
+  updatedAt: string
+}
+
+export type NotificationKind = 'card' | 'subtask'
+
+/** Notificação de prazo vencido — histórico permanente (não é apagada ao ser lida). */
+export interface AppNotification {
+  id: string
+  workspaceId: string
+  kind: NotificationKind
+  cardId: string
+  subtaskId: string | null
+  message: string
+  /** ISO datetime do vencimento que gerou o alerta — chave de deduplicação junto com kind/cardId/subtaskId. */
+  dueAt: string
+  isRead: boolean
+  createdAt: string
+}
+
+/** Item agregado (card ou subtarefa com prazo) pro calendário. */
+export interface CalendarItem {
+  id: string
+  kind: NotificationKind
+  title: string
+  dueDate: string
+  dueTime: string | null
+  isDone: boolean
+  cardId: string
+  cardTitle: string
+  groupId: string
+}
+
+/** fromStatus/toStatus guardam o id da coluna no momento da mudança (pode
+ * apontar pra uma coluna já excluída — ver docs/database.md). */
 export interface StatusHistoryEntry {
   id: string
   cardId: string
-  fromStatus: CardStatus | null
-  toStatus: CardStatus
+  fromStatus: string | null
+  toStatus: string
   changedAt: string
 }
 
@@ -70,6 +114,17 @@ export interface Comment {
   body: string
   createdAt: string
   updatedAt: string
+}
+
+/** Metadados de um arquivo anexado a um card (o arquivo em si fica só no
+ * disco local, copiado pro storage do app — ver docs/database.md). */
+export interface Attachment {
+  id: string
+  cardId: string
+  fileName: string
+  mimeType: string | null
+  sizeBytes: number
+  createdAt: string
 }
 
 export interface Tag {
@@ -137,7 +192,7 @@ export interface CardSummary {
   id: string
   groupId: string
   title: string
-  status: CardStatus
+  columnId: string
 }
 
 /** Uma relação já resolvida com os dados do card do outro lado, pronta para exibir. */
@@ -169,13 +224,44 @@ export interface CreateCardInput {
   groupId: string
   title: string
   description?: string | null
+  dueDate?: string | null
+  dueTime?: string | null
 }
 
 export interface UpdateCardInput {
   title?: string
   description?: string | null
-  status?: CardStatus
+  columnId?: string
   position?: number
+  dueDate?: string | null
+  dueTime?: string | null
+}
+
+export interface CreateSubtaskInput {
+  cardId: string
+  title: string
+  dueDate?: string | null
+  dueTime?: string | null
+}
+
+export interface UpdateSubtaskInput {
+  title?: string
+  isDone?: boolean
+  dueDate?: string | null
+  dueTime?: string | null
+  position?: number
+}
+
+export interface CreateBoardColumnInput {
+  workspaceId: string
+  name: string
+}
+
+export interface UpdateBoardColumnInput {
+  name?: string
+  position?: number
+  isDone?: boolean
+  color?: string | null
 }
 
 export interface UpdatePomodoroConfigInput {
@@ -218,13 +304,19 @@ export interface DailyCardCount {
   count: number
 }
 
+/** Quantos cards (não excluídos) tem em cada coluna do quadro — gráfico de barras do dashboard. */
+export interface ColumnCardCount {
+  columnId: string
+  columnName: string
+  count: number
+}
+
 /** Agregados do workspace inteiro para o dashboard. */
 export interface DashboardSummary {
   totalCards: number
   openCount: number
-  inProgressCount: number
   doneCount: number
-  byStatus: Record<CardStatus, number>
+  byColumn: ColumnCardCount[]
   totalStudySeconds: number
   totalPomodoros: number
   openCardsBySubject: SubjectOpenCount[]

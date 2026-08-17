@@ -1,11 +1,11 @@
 import type Database from 'better-sqlite3'
-import type { CardStatus, StatusHistoryEntry } from '@shared/types'
+import type { StatusHistoryEntry } from '@shared/types'
 
 interface StatusHistoryRow {
   id: string
   card_id: string
-  from_status: CardStatus | null
-  to_status: CardStatus
+  from_status: string | null
+  to_status: string
   changed_at: string
 }
 
