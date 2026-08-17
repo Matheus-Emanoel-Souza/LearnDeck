@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type {
   Attachment,
   BoardColumn,
@@ -23,12 +23,17 @@ import CardAttachments from '../components/CardAttachments'
 import CardSubtasks from '../components/CardSubtasks'
 import CardIdBadge from '../components/CardIdBadge'
 
+export type CardDetailFocus = 'timer' | 'comment' | 'relations'
+
 interface CardDetailPageProps {
   card: Card
   workspaceId: string
   columns: BoardColumn[]
   onBack: () => void
   onNavigateToCard: (cardId: string) => void
+  /** Seção pra rolar até e focar ao abrir — usada pelo menu de ações do card
+   *  do Kanban (⋮), que só atalha pra uma seção que já existe aqui embaixo. */
+  initialFocus?: CardDetailFocus | null
 }
 
 /**
@@ -42,7 +47,8 @@ export default function CardDetailPage({
   workspaceId,
   columns,
   onBack,
-  onNavigateToCard
+  onNavigateToCard,
+  initialFocus
 }: CardDetailPageProps): JSX.Element {
   const [card, setCard] = useState(initialCard)
   const [description, setDescription] = useState(initialCard.description ?? '')
@@ -67,6 +73,26 @@ export default function CardDetailPage({
   const [dueDate, setDueDate] = useState(initialCard.dueDate ?? '')
   const [dueTime, setDueTime] = useState(initialCard.dueTime ?? '')
   const [dueDirty, setDueDirty] = useState(false)
+
+  const timerSectionRef = useRef<HTMLElement>(null)
+  const commentSectionRef = useRef<HTMLElement>(null)
+  const commentTextareaRef = useRef<HTMLTextAreaElement>(null)
+  const relationsSectionRef = useRef<HTMLElement>(null)
+
+  // Vindo do menu de ações (⋮) do card no Kanban: rola até a seção pedida e,
+  // quando faz sentido, já coloca o foco no campo (ex.: comentário).
+  useEffect(() => {
+    if (!initialFocus) return
+    const target =
+      initialFocus === 'timer'
+        ? timerSectionRef.current
+        : initialFocus === 'comment'
+          ? commentSectionRef.current
+          : relationsSectionRef.current
+    target?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    if (initialFocus === 'comment') commentTextareaRef.current?.focus()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialFocus, initialCard.id])
   const [savingDue, setSavingDue] = useState(false)
 
   const reloadSessions = useCallback(() => {
@@ -276,7 +302,7 @@ export default function CardDetailPage({
             <CardAttachments cardId={card.id} attachments={attachments} onChanged={setAttachments} />
           </section>
 
-          <section className="card-section">
+          <section className="card-section" ref={commentSectionRef}>
             <h3>Comentários</h3>
             <div className="comment-list">
               {comments.map((comment) => (
@@ -295,6 +321,7 @@ export default function CardDetailPage({
               }}
             >
               <textarea
+                ref={commentTextareaRef}
                 rows={2}
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
@@ -375,7 +402,7 @@ export default function CardDetailPage({
             </div>
           </section>
 
-          <section className="card-section">
+          <section className="card-section" ref={timerSectionRef}>
             <h3>Cronômetro</h3>
             <CardTimer card={card} onCardUpdated={setCard} onSessionsChanged={reloadSessions} />
           </section>
@@ -439,7 +466,7 @@ export default function CardDetailPage({
             )}
           </section>
 
-          <section className="card-section">
+          <section className="card-section" ref={relationsSectionRef}>
             <h3>Cards relacionados</h3>
             <CardRelations
               workspaceId={workspaceId}

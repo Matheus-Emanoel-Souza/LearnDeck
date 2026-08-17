@@ -603,6 +603,13 @@ select {
   gap: 0.4rem;
 }
 
+.kanban-card__header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  flex-shrink: 0;
+}
+
 .kanban-card__title-group {
   display: flex;
   flex-direction: column;
@@ -1705,6 +1712,95 @@ select {
   font-weight: 700;
   line-height: 18px;
   font-size: 0.8rem;
+}
+
+/* ---- Menu de ações do card (botão de três pontos) ---- */
+
+.card-actions-menu {
+  position: relative;
+}
+
+.card-actions-menu__trigger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border-radius: var(--radius-sm, 6px);
+  background: transparent;
+  color: var(--text-muted);
+  opacity: 0;
+  transition:
+    opacity 0.12s ease,
+    background 0.12s ease,
+    color 0.12s ease;
+}
+
+.kanban-card:hover .card-actions-menu__trigger,
+.card-actions-menu__trigger:focus-visible,
+.card-actions-menu__trigger[aria-expanded='true'] {
+  opacity: 1;
+}
+
+.card-actions-menu__trigger:hover {
+  background: var(--bg-elevated-2);
+  color: var(--text);
+}
+
+.card-actions-menu__trigger svg {
+  width: 16px;
+  height: 16px;
+}
+
+.card-actions-menu__panel {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 100;
+  min-width: 220px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md, 10px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  padding: 0.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.card-actions-menu__item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  text-align: left;
+  padding: 0.5rem 0.6rem;
+  border-radius: var(--radius-sm, 6px);
+  background: transparent;
+  color: var(--text);
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.card-actions-menu__item:hover,
+.card-actions-menu__item:focus-visible {
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
+.card-actions-menu__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  color: inherit;
+}
+
+.card-actions-menu__icon svg {
+  width: 100%;
+  height: 100%;
 }
 
 .status-badge--done {

@@ -3,8 +3,9 @@
 ## Visão geral
 
 LearnDeck é um aplicativo **desktop, 100% local e offline**, para gerenciar estudos através de
-cards em um quadro estilo Kanban, com cronômetro, Pomodoro, comentários, histórico e
-relacionamentos entre cards.
+cards em um quadro estilo Kanban (colunas dinâmicas, editáveis por workspace), com cronômetro,
+Pomodoro, comentários, histórico, relacionamentos entre cards, anexos, prazos, subtarefas,
+calendário e central de notificações de atraso.
 
 Não há servidor, não há rede, não há dependência de internet. Todos os dados vivem em um
 arquivo SQLite dentro da pasta de dados do usuário (`%APPDATA%\LearnDeck`).
@@ -100,9 +101,12 @@ LearnDeck/
 │   │   ├── index.html
 │   │   └── src/
 │   │       ├── main.tsx
-│   │       ├── App.tsx
-│   │       ├── pages/          # KanbanBoard, CardDetail, ...
-│   │       ├── components/     # Componentes reutilizáveis
+│   │       ├── App.tsx         # Navegação entre abas: Estudos, Dashboard, Calendário, Configurações
+│   │       ├── pages/          # StudyPanel (quadro), CardDetailPage, Dashboard, CalendarPage,
+│   │       │                   #   NotificationsPage, Settings
+│   │       ├── components/     # KanbanBoard/Column/Card, ColumnContextMenu, NewColumnMenu,
+│   │       │                   #   CardActionsMenu (⋮), CardAttachments, CardSubtasks,
+│   │       │                   #   CardRelations, CardTimer, CardPomodoro, NotificationBell, ...
 │   │       └── styles/
 │   └── shared/                  # Tipos TS compartilhados entre main/preload/renderer
 │       └── types.ts             # Card, Group, StudySession, Pomodoro, etc.
@@ -128,6 +132,25 @@ evitando duplicação e dessincronia de tipos entre os processos.
 6. Resposta volta pela mesma cadeia; o renderer atualiza a UI (mostra cronômetro rodando).
 7. Ao clicar em "Parar", o fluxo se repete para `timer:stop`, que fecha a sessão
    (`ended_at`, `duration_seconds`) e atualiza o tempo total do card.
+
+## Colunas dinâmicas (Kanban)
+
+Desde a `002_board_columns.sql` as colunas do quadro deixaram de ser um enum fixo
+(`backlog`/`to_study`/.../`done`) e passaram a ser dados: `board_columns` por workspace, com
+nome, posição, cor e uma flag `is_done`. `cards.status` virou `cards.column_id` (FK livre).
+Criar/renomear/reordenar/colorir/duplicar/excluir uma coluna acontece pelo menu de contexto
+(botão direito) no cabeçalho da coluna (`ColumnContextMenu`), sem exigir migração de schema
+para cada mudança.
+
+## Menu de ações do card (⋮)
+
+Cada `KanbanCard` tem um botão de três pontos (`CardActionsMenu`) que abre um menu com 4
+opções: **Novo apontamento**, **Enviar comunicação**, **Agrupar ticket**, **Abrir ticket
+filho**. Nenhuma delas é uma funcionalidade nova — são atalhos que abrem `CardDetailPage` já
+rolada/focada na seção correspondente (cronômetro, comentários ou cards relacionados),
+reaproveitando o que já existe lá (ver `StudyPanel.handleCardAction`). "Abrir ticket filho"
+navega direto para o card relacionado quando existe exatamente um; caso contrário, abre a
+seção de relacionados para a pessoa escolher.
 
 ## Preparando o terreno para o futuro (sem implementar agora)
 

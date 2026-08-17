@@ -5,6 +5,7 @@ import KanbanColumn from './KanbanColumn'
 import NewCardForm from './NewCardForm'
 import ColumnContextMenu from './ColumnContextMenu'
 import NewColumnMenu from './NewColumnMenu'
+import type { CardActionId } from './CardActionsMenu'
 
 interface KanbanBoardProps {
   cards: Card[]
@@ -17,6 +18,7 @@ interface KanbanBoardProps {
     dueTime: string | null
   ) => Promise<void>
   onOpenCard: (card: Card) => void
+  onCardAction: (card: Card, action: CardActionId) => void
   onCreateColumn: (name: string) => Promise<void>
   onRenameColumn: (id: string, name: string) => Promise<void>
   onReorderColumns: (orderedIds: string[]) => Promise<void>
@@ -38,6 +40,7 @@ export default function KanbanBoard({
   onMoveCard,
   onCreateCard,
   onOpenCard,
+  onCardAction,
   onCreateColumn,
   onRenameColumn,
   onReorderColumns,
@@ -94,6 +97,7 @@ export default function KanbanBoard({
           onDragOverCard={() => setDropTargetColumnId(column.id)}
           onDropOnCard={(index) => void finishDrop(column.id, index)}
           onOpenCard={onOpenCard}
+          onCardAction={onCardAction}
           onContextMenu={(e, columnId) => {
             e.preventDefault()
             setContextMenu({ columnId, x: e.clientX, y: e.clientY })

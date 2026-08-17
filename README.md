@@ -13,13 +13,15 @@ funcionamento de sistemas de tickets (estilo TiFlux), mas voltado para acompanha
 aprendizado, tempo de estudo e produtividade.
 
 Organize seus estudos em grupos hierárquicos (`Faculdade > Cálculo > Integrais`), mova cards
-entre colunas de um quadro Kanban (`Backlog → A estudar → Estudando → Pausado → Revisar →
-Concluído`), cronometre suas sessões de estudo, use Pomodoro configurável, relacione cards
-entre si (ex.: "Estudar derivadas" como pré-requisito de "Estudar integrais") e acompanhe tudo
-num dashboard com números e gráficos.
+entre colunas de um quadro Kanban totalmente **customizável** (crie, renomeie, reordene e
+colora as colunas do seu jeito), cronometre suas sessões de estudo, use Pomodoro configurável,
+relacione cards entre si (ex.: "Estudar derivadas" como pré-requisito de "Estudar integrais"),
+anexe arquivos, defina prazos e subtarefas, acompanhe vencimentos no calendário e na central de
+notificações, e veja tudo num dashboard com números e gráficos.
 
-> ✅ MVP completo (Fases 0 a 9 do roadmap). Ver histórico em [`docs/roadmap.md`](docs/roadmap.md)
-> e o que já existe vs. o que falta em [`docs/features.md`](docs/features.md).
+> ✅ MVP completo (Fases 0 a 9) + Fase 10 (colunas dinâmicas, anexos, prazos, subtarefas,
+> notificações). Ver histórico em [`docs/roadmap.md`](docs/roadmap.md) e o que já existe vs. o
+> que falta em [`docs/features.md`](docs/features.md).
 
 ---
 
@@ -51,11 +53,14 @@ próprio app).
 
 1. **Grupos** — crie matérias/projetos hierárquicos na barra lateral (ex.: `Faculdade > Cálculo
    > Integrais`), quantos níveis quiser.
-2. **Cards** — dentro de um grupo, crie cards de estudo (título + descrição). Todo card nasce em
-   `Backlog`.
-3. **Quadro Kanban** — arraste os cards entre as colunas (`Backlog`, `A estudar`, `Estudando`,
-   `Pausado`, `Revisar`, `Concluído`) ou reordene dentro da mesma coluna. Toda troca de status
-   fica registrada no histórico do card.
+2. **Cards** — dentro de um grupo, crie cards de estudo (título + descrição opcional, prazo
+   opcional). Todo card nasce na primeira coluna do quadro.
+3. **Quadro Kanban** — colunas **dinâmicas**, definidas por você: crie, renomeie, reordene
+   (arraste o cabeçalho), colora, duplique ou exclua (só se vazia) pelo botão direito no
+   cabeçalho da coluna. Arraste os cards entre colunas ou reordene dentro da mesma coluna — toda
+   troca fica registrada no histórico do card. Cada card tem um botão **⋮** no canto que abre um
+   menu rápido: Novo apontamento, Enviar comunicação, Agrupar ticket, Abrir ticket filho (atalhos
+   para o que já existe na tela do card — item 4).
 4. **Tela do card** — clicar num card abre uma **tela inteira** dedicada a ele (não um modal),
    com:
    - descrição editável, tags e comentários;
@@ -65,12 +70,19 @@ próprio app).
      automaticamente como uma sessão de estudo;
    - lista das sessões de estudo anteriores;
    - **cards relacionados** (pré-requisito, bloqueia, relacionado, parte de), com busca por
-     título em todo o workspace e navegação direta entre cards ligados.
-5. **Dashboard** — aba separada com a quantidade de cards abertos/em andamento/concluídos, horas
-   totais estudadas, Pomodoros concluídos e gráficos de distribuição por status.
-6. **Instalador e atualizações** — o app é distribuído como um instalador `.exe` autocontido; uma
-   vez instalado, ele mesmo verifica e baixa novas versões pela internet (GitHub Releases) e
-   avisa quando estiver pronto para reiniciar e aplicar a atualização.
+     título ou seleção por lista completa do workspace, e navegação direta entre cards ligados;
+   - **arquivos anexados** (selecionar, abrir com o programa padrão, remover);
+   - **prazo** (data + hora) e **subtarefas** (com prazo próprio e marcação de concluída).
+5. **Calendário e notificações** — visão mensal de prazos (cards e subtarefas) com clique
+   abrindo o card correspondente, e uma central de notificações com alertas de vencimento
+   (deduplicados, marcáveis como lidos).
+6. **Dashboard** — aba separada com a quantidade de cards abertos/em andamento/concluídos, horas
+   totais estudadas, Pomodoros concluídos, gráfico de pizza (cards por matéria) e gráfico de
+   linha (cards abertos ao longo da semana).
+7. **Configurações** — tela dedicada com verificação manual de atualizações.
+8. **Instalador e atualizações** — o app é distribuído como um instalador `.exe` autocontido, com
+   ícone próprio; uma vez instalado, ele mesmo verifica e baixa novas versões pela internet
+   (GitHub Releases) e avisa quando estiver pronto para reiniciar e aplicar a atualização.
 
 ## ✅ Funcionalidades
 
@@ -78,18 +90,23 @@ Ver estado detalhado em [`docs/features.md`](docs/features.md) e o histórico co
 [`docs/roadmap.md`](docs/roadmap.md).
 
 - Grupos hierárquicos (matérias/projetos/subassuntos)
-- Cards com título, descrição, status, tags, comentários e histórico de mudanças
-- Quadro Kanban visual com drag-and-drop (Backlog, A estudar, Estudando, Pausado, Revisar,
-  Concluído)
+- Cards com título, descrição, coluna, tags, comentários, prazo e histórico de mudanças
+- Quadro Kanban visual com **colunas dinâmicas** (criar/renomear/reordenar/colorir/duplicar/
+  excluir) e drag-and-drop de cards
+- Menu de ações do card (⋮): Novo apontamento, Enviar comunicação, Agrupar ticket, Abrir ticket
+  filho
 - Tela inteira dedicada a cada card (não modal)
 - Cronômetro individual por card, com sessões de estudo registradas
 - Pomodoro configurável, vinculado a cada card e ao cronômetro
-- Relacionamentos entre cards (pré-requisito, bloqueia, relacionado, parte de), com busca no
-  workspace inteiro
-- Dashboard com contagens por status, horas estudadas, Pomodoros e gráficos
+- Relacionamentos entre cards (pré-requisito, bloqueia, relacionado, parte de), com busca ou
+  seleção por lista no workspace inteiro
+- Anexos, prazos (card e subtarefa), subtarefas, calendário e central de notificações de atraso
+- Dashboard com contagens por status, horas estudadas, Pomodoros e gráficos (pizza por matéria,
+  linha por semana)
+- Tela de Configurações com verificação manual de atualizações
 - Layout em paleta lavanda/roxo, estilo app de estudos
-- Instalador `.exe` para Windows, funcionando totalmente offline, com atualização automática
-  via internet (GitHub Releases)
+- Instalador `.exe` para Windows, com ícone próprio, funcionando totalmente offline, com
+  atualização automática via internet (GitHub Releases)
 
 ## ⚙️ Pré-requisitos
 

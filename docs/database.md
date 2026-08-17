@@ -20,18 +20,21 @@ SQLite, arquivo único em `%APPDATA%\LearnDeck\learndeck.db` (Windows). Acesso v
 
 ```text
 workspaces
+   ├─< board_columns (colunas dinâmicas do Kanban, por workspace)
+   ├─< notifications
    └─< groups (self-referencing: parent_group_id) >─┐
                                                        │
                                                        ▼
-                                                     cards
-                                                    ┌──┼──────────────────────┐
-                                                    │  │                      │
+                                                     cards ──> board_columns (column_id)
+                                                    ┌──┼───────────────────────────┐
+                                                    │  │                           │
                                              comments  status_history   card_tags >─< tags
                                                     │
-                                        ┌───────────┼───────────────┐
-                                        ▼           ▼               ▼
-                                 study_sessions  pomodoros    card_relations
-                                                                (card_id, related_card_id)
+                            ┌───────────┬───────────┼───────────────┬─────────────┐
+                            ▼           ▼           ▼               ▼             ▼
+                     study_sessions  pomodoros  card_relations  attachments   subtasks
+                                                  (card_id,                   (prazo próprio,
+                                                   related_card_id)            is_done)
 ```
 
 ## Tabelas
@@ -63,6 +66,23 @@ Matérias/projetos/pastas, hierárquicos (`Faculdade > Cálculo > Integrais`).
 | updated_at | TEXT | |
 | deleted_at | TEXT NULL | soft delete |
 
+### `board_columns`
+
+Colunas do quadro Kanban — deixaram de ser um enum fixo (`001_init.sql`) e viraram dados
+editáveis por workspace (`002_board_columns.sql`): criar, renomear, reordenar, colorir,
+duplicar e excluir (só se vazia) pelo menu de contexto (botão direito) no cabeçalho da coluna.
+
+| Coluna | Tipo | Notas |
+|---|---|---|
+| id | TEXT PK | UUID |
+| workspace_id | TEXT FK → workspaces.id (CASCADE) | |
+| name | TEXT | |
+| position | INTEGER | ordenação das colunas no quadro |
+| is_done | INTEGER (0/1) | marca a(s) coluna(s) que contam como "concluído" no dashboard/prazos |
+| color | TEXT NULL | cor de destaque no cabeçalho da coluna (`003_column_color.sql`) |
+| created_at | TEXT | |
+| updated_at | TEXT | |
+
 ### `cards`
 
 A entidade central — um "assunto de estudo".
@@ -73,10 +93,12 @@ A entidade central — um "assunto de estudo".
 | group_id | TEXT FK → groups.id | |
 | title | TEXT | |
 | description | TEXT NULL | markdown livre |
-| status | TEXT | enum: `backlog`, `to_study`, `studying`, `paused`, `review`, `done` |
+| column_id | TEXT FK → board_columns.id | substitui o antigo enum `status` fixo — ver `board_columns` acima |
 | position | INTEGER | ordenação dentro da coluna do Kanban |
 | total_study_seconds | INTEGER | **campo desnormalizado**, cache da soma de `study_sessions`; recalculado pelo `TimerService` a cada sessão fechada, para não somar em runtime a cada render |
 | pomodoros_completed | INTEGER | idem, cache da contagem de `pomodoros` concluídos |
+| due_date | TEXT NULL | prazo opcional (`005_deadlines_subtasks_notifications.sql`) |
+| due_time | TEXT NULL | horário do prazo, opcional (só relevante se `due_date` estiver preenchido) |
 | created_at | TEXT | |
 | updated_at | TEXT | |
 | deleted_at | TEXT NULL | soft delete |
@@ -94,8 +116,8 @@ Toda mudança de status de um card gera uma linha aqui — nunca é editada, só
 |---|---|---|
 | id | TEXT PK | UUID |
 | card_id | TEXT FK → cards.id (CASCADE) | |
-| from_status | TEXT NULL | NULL na criação do card |
-| to_status | TEXT | |
+| from_status | TEXT NULL | NULL na criação do card; guardava o enum fixo, hoje guarda o `id` da coluna (`board_columns`) |
+| to_status | TEXT | idem — id da coluna, texto livre desde a `002_board_columns.sql` |
 | changed_at | TEXT | |
 
 ### `comments`
@@ -179,15 +201,73 @@ Relacionamentos direcionados entre cards (`Estudar derivadas → pré-requisito 
 
 `UNIQUE(card_id, related_card_id, relation_type)` para evitar duplicatas.
 
+### `attachments`
+
+Arquivos anexados a um card (`004_attachments.sql`). O arquivo em si é **copiado** para
+`%APPDATA%\LearnDeck\attachments\<card_id>\<uuid>-<nome>`; esta tabela só guarda os metadados
+— abrir o arquivo (`shell.openPath`) e removê-lo (do disco + da tabela) são operações do
+`AttachmentService` no processo main.
+
+| Coluna | Tipo | Notas |
+|---|---|---|
+| id | TEXT PK | UUID |
+| card_id | TEXT FK → cards.id (CASCADE) | |
+| file_name | TEXT | nome original do arquivo |
+| stored_path | TEXT | caminho absoluto na pasta de dados do app |
+| mime_type | TEXT NULL | |
+| size_bytes | INTEGER | |
+| created_at | TEXT | |
+
+### `subtasks`
+
+Subtarefas de um card, com prazo próprio independente do prazo do card pai
+(`005_deadlines_subtasks_notifications.sql`).
+
+| Coluna | Tipo | Notas |
+|---|---|---|
+| id | TEXT PK | UUID |
+| card_id | TEXT FK → cards.id (CASCADE) | |
+| title | TEXT | |
+| is_done | INTEGER (0/1) | |
+| due_date | TEXT NULL | prazo próprio, opcional |
+| due_time | TEXT NULL | |
+| position | INTEGER | ordenação manual na lista de subtarefas |
+| created_at | TEXT | |
+| updated_at | TEXT | |
+
+### `notifications`
+
+Alertas de vencimento gerados pelo `notificationService` (card ou subtarefa atrasados), lidos
+na Central de Notificações. Deduplicadas: reescanear prazos vencidos nunca insere duas
+notificações para o mesmo vencimento exato.
+
+| Coluna | Tipo | Notas |
+|---|---|---|
+| id | TEXT PK | UUID |
+| workspace_id | TEXT FK → workspaces.id (CASCADE) | |
+| kind | TEXT | enum: `card`, `subtask` |
+| card_id | TEXT FK → cards.id (CASCADE) | |
+| subtask_id | TEXT FK → subtasks.id (CASCADE), NULL | preenchido só quando `kind = 'subtask'` |
+| message | TEXT | ex.: `O ticket "..." venceu` |
+| due_at | TEXT | vencimento exato (ISO) que gerou o alerta |
+| is_read | INTEGER (0/1) | |
+| created_at | TEXT | |
+
+`UNIQUE(kind, card_id, COALESCE(subtask_id, ''), due_at)` é a chave de deduplicação.
+
 ## Índices previstos
 
 - `groups(workspace_id)`, `groups(parent_group_id)`
-- `cards(group_id)`, `cards(status)`
+- `board_columns(workspace_id)`
+- `cards(group_id)`, `cards(column_id)`, `cards(due_date)`
 - `status_history(card_id)`
 - `comments(card_id)`
 - `study_sessions(card_id)`, `study_sessions(started_at)` (para agregações de dashboard: hoje/semana)
 - `pomodoros(card_id)`
 - `card_relations(card_id)`, `card_relations(related_card_id)`
+- `attachments(card_id)`
+- `subtasks(card_id)`, `subtasks(due_date)`
+- `notifications(workspace_id)`, `notifications(workspace_id, is_read)`
 
 ## Migrations
 
@@ -195,3 +275,11 @@ Scripts SQL puros e sequenciais em `src/main/db/migrations/NNN_descricao.sql`. U
 `schema_migrations (version INTEGER PK, applied_at TEXT)` registra o que já rodou. O runner
 (`src/main/db/migrate.ts`) roda no boot do app, dentro de uma transação, aplicando apenas as
 migrations pendentes — sem dependência externa (nada de `knex`/`prisma migrate`).
+
+| Migration | O que muda |
+|---|---|
+| `001_init.sql` | Schema inicial (workspaces, groups, cards com `status` enum fixo, comments, tags, sessions, pomodoros, relations) |
+| `002_board_columns.sql` | Colunas do Kanban viram dados (`board_columns`); `cards.status` (enum) vira `cards.column_id` (FK livre); reescreve `status_history` para os novos ids |
+| `003_column_color.sql` | Adiciona `board_columns.color` |
+| `004_attachments.sql` | Tabela `attachments` |
+| `005_deadlines_subtasks_notifications.sql` | `cards.due_date`/`due_time`, tabelas `subtasks` e `notifications` |

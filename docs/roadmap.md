@@ -86,7 +86,7 @@ Marcado como funcionalidade implementada apenas depois de rodar e ser validada.
 - [x] `electron-builder` configurado para gerar instalador `.exe` (NSIS), self-contained
 - [x] Script único de build (`npm run dist`) gerando o instalador em `dist/`
 - [x] Instalador testado manualmente (assistente abre, detecta pt-BR, opção usuário/todos)
-- [ ] Ícone próprio do app (hoje usa o ícone padrão do Electron — ver `build/`)
+- [x] Ícone próprio do app no instalador Windows (commit: *"feat: icone personalizado no instalador Windows"*)
 - [ ] Atalho no Menu Iniciar/Desktop e desinstalador testados até o fim (instalação completa)
 
 ## Fase 9 — Atualização automática ✅
@@ -95,6 +95,26 @@ Marcado como funcionalidade implementada apenas depois de rodar e ser validada.
 - [x] Checagem e download em segundo plano ao abrir o app (só em build empacotado, não em dev)
 - [x] Diálogo perguntando se quer reiniciar agora ou aplicar a atualização ao fechar o app
 - [x] Commit: *"feat: atualizacao automatica via GitHub Releases (electron-updater)"*
+
+## Fase 10 — Colunas dinâmicas, anexos, prazos, subtarefas e notificações ✅
+
+Pós-MVP, incrementos pedidos depois da Fase 9.
+
+- [x] ID visível e copiável em cada card (`CardIdBadge`) — commit: *"feat: ID visivel e copiavel em cada card"*
+- [x] Relacionar card por lista completa do workspace (além da busca por título) — commit: *"feat: relacionar card por lista completa (botao + selecao por clique)"*
+- [x] Dashboard: gráfico de pizza (cards abertos por matéria) e gráfico de linha (cards abertos
+      ao longo da semana) — commit: *"feat: dashboard com grafico de pizza (cards por materia) e linha (semana)"*
+- [x] Ícone personalizado no instalador Windows — commit: *"feat: icone personalizado no instalador Windows"*
+- [x] Tela de Configurações com verificação manual de atualizações — commit: *"feat: tela de Configuracoes com verificacao manual de atualizacoes"*
+- [x] Colunas dinâmicas do quadro Kanban: criar, renomear, reordenar, duplicar, colorir, excluir
+      (por workspace, substitui o enum fixo de status) — commit: *"feat: colunas dinamicas do quadro Kanban (criar, renomear, duplicar, colorir, excluir)"*
+- [x] Anexar arquivos ao card: selecionar, abrir, remover — commit: *"feat: anexar arquivos ao card (selecionar, abrir, remover)"*
+- [x] Calendário, prazos (card e subtarefa), subtarefas e central de notificações de atraso —
+      commit: *"feat: calendario, prazos, subtarefas e central de notificacoes"*
+- [x] UI ligada de ponta a ponta (quadro, dashboard, configurações, tela do card) — commit: *"feat: liga colunas dinamicas, prazos, subtarefas e notificacoes na UI"*
+- [x] Menu de ações do card (⋮) no Kanban, substituindo a necessidade de abrir o card pra achar
+      cronômetro/comentário/relação: Novo apontamento, Enviar comunicação, Agrupar ticket, Abrir
+      ticket filho — atalhos para funcionalidades já existentes, sem lógica nova
 
 ## Backlog futuro (fora do MVP, arquitetura já permite)
 

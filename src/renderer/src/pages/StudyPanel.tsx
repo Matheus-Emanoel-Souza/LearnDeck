@@ -4,7 +4,8 @@ import { buildGroupTree } from '../lib/groupTree'
 import { reorderCards } from '../lib/kanban'
 import GroupSidebar from '../components/GroupSidebar'
 import KanbanBoard from '../components/KanbanBoard'
-import CardDetailPage from './CardDetailPage'
+import type { CardActionId } from '../components/CardActionsMenu'
+import CardDetailPage, { type CardDetailFocus } from './CardDetailPage'
 
 interface StudyPanelProps {
   workspaceId: string
@@ -22,6 +23,7 @@ export default function StudyPanel({ workspaceId }: StudyPanelProps): JSX.Elemen
   const [loadingCards, setLoadingCards] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [viewingCard, setViewingCard] = useState<Card | null>(null)
+  const [viewingCardFocus, setViewingCardFocus] = useState<CardDetailFocus | null>(null)
 
   const tree = useMemo(() => buildGroupTree(groups), [groups])
 
@@ -174,14 +176,46 @@ export default function StudyPanel({ workspaceId }: StudyPanelProps): JSX.Elemen
   async function handleNavigateToCard(cardId: string): Promise<void> {
     try {
       const target = await window.api.cards.get(cardId)
-      if (target) setViewingCard(target)
+      if (target) {
+        setViewingCardFocus(null)
+        setViewingCard(target)
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
     }
   }
 
+  /**
+   * Menu de ações (⋮) do card no Kanban. As 4 opções não são funcionalidades
+   * novas — cada uma abre o card já na seção correspondente da tela de
+   * detalhe (CardDetailPage), reaproveitando o que já existe lá.
+   */
+  async function handleCardAction(card: Card, action: CardActionId): Promise<void> {
+    if (action === 'filho') {
+      try {
+        const relations = await window.api.relations.listByCard(card.id)
+        if (relations.length === 1) {
+          await handleNavigateToCard(relations[0].card.id)
+          return
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : String(err))
+        return
+      }
+      // Nenhuma ou mais de uma relação: abre o card e deixa a pessoa escolher.
+      setViewingCardFocus('relations')
+      setViewingCard(card)
+      return
+    }
+
+    const focus: CardDetailFocus = action === 'apontamento' ? 'timer' : action === 'comunicacao' ? 'comment' : 'relations'
+    setViewingCardFocus(focus)
+    setViewingCard(card)
+  }
+
   function handleBackFromCard(): void {
     setViewingCard(null)
+    setViewingCardFocus(null)
     // O card pode ter mudado de coluna/posição, ou a relação pode ter sido
     // editada; recarrega do banco em vez de tentar reconciliar em memória.
     if (selectedGroupId) reloadCards(selectedGroupId).catch(() => undefined)
@@ -197,6 +231,7 @@ export default function StudyPanel({ workspaceId }: StudyPanelProps): JSX.Elemen
         columns={columns}
         onBack={handleBackFromCard}
         onNavigateToCard={(cardId) => void handleNavigateToCard(cardId)}
+        initialFocus={viewingCardFocus}
       />
     )
   }
@@ -231,7 +266,11 @@ export default function StudyPanel({ workspaceId }: StudyPanelProps): JSX.Elemen
                 columns={columns}
                 onMoveCard={handleMoveCard}
                 onCreateCard={handleCreateCard}
-                onOpenCard={setViewingCard}
+                onOpenCard={(card) => {
+                  setViewingCardFocus(null)
+                  setViewingCard(card)
+                }}
+                onCardAction={(card, action) => void handleCardAction(card, action)}
                 onCreateColumn={handleCreateColumn}
                 onRenameColumn={handleRenameColumn}
                 onReorderColumns={handleReorderColumns}
