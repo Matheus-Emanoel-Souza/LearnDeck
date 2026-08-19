@@ -311,6 +311,39 @@ export interface ColumnCardCount {
   count: number
 }
 
+/** Caderno do card: documentação técnica em Markdown (1:1 com o card,
+ * criado sob demanda no primeiro save — ver docs/database.md). `version`
+ * é a trava otimista: todo save exige a `baseVersion` lida por último. */
+export interface Notebook {
+  id: string
+  cardId: string
+  contentMarkdown: string
+  version: number
+  createdAt: string
+  updatedAt: string
+}
+
+/** Snapshot de uma versão salva do caderno, para histórico/restauração. */
+export interface NotebookVersion {
+  id: string
+  notebookId: string
+  version: number
+  contentMarkdown: string
+  createdAt: string
+}
+
+export interface SaveNotebookInput {
+  cardId: string
+  contentMarkdown: string
+  /** Version lida no último load/save — se não bater com a atual no banco,
+   * o save é recusado (conflito de edição concorrente). */
+  baseVersion: number
+}
+
+export type SaveNotebookResult =
+  | { status: 'ok'; notebook: Notebook }
+  | { status: 'conflict'; notebook: Notebook }
+
 /** Agregados do workspace inteiro para o dashboard. */
 export interface DashboardSummary {
   totalCards: number

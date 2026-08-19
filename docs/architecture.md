@@ -152,6 +152,89 @@ reaproveitando o que já existe lá (ver `StudyPanel.handleCardAction`). "Abrir 
 navega direto para o card relacionado quando existe exatamente um; caso contrário, abre a
 seção de relacionados para a pessoa escolher.
 
+## Caderno do card
+
+Aba **Caderno** na tela do card (`CardDetailPage`), ao lado de Detalhes — documentação técnica
+em Markdown com editor visual, um caderno por card (1:1, `notebooks.card_id UNIQUE`, criado sob
+demanda no primeiro save). Não substitui os apontamentos/comentários (histórico cronológico);
+é a documentação organizada e atualizável do ticket. Ver schema em
+[`database.md`](./database.md) e decisões técnicas em [`decisions.md`](./decisions.md).
+
+### Biblioteca do editor
+
+**MDXEditor** (`@mdxeditor/editor`, sobre Lexical) — escolhida porque trata Markdown como fonte
+real (não um JSON que é exportado pra Markdown de forma aproximada, como no BlockNote), é React
+nativo, e expõe uma API pública de extensão (plugins, diretivas Markdown, editores de bloco de
+código customizados, sinais `insertX$`/`useCellValue`/`usePublisher`) suficiente pra cobrir todo
+o pedido sem escrever um editor do zero. Ver `src/renderer/src/components/notebook/`.
+
+### Blocos personalizados (todos Markdown puro, portáteis fora do app)
+
+| Recurso | Sintaxe Markdown | Implementação |
+|---|---|---|
+| Bloco de informação/aviso/erro/sucesso | `:::info` / `:::caution` / `:::danger` / `:::tip` | `AdmonitionDirectiveDescriptor` (nativo do MDXEditor) |
+| Seção recolhível | `:::details{title="..."}` | `plugins/detailsDirective.tsx` → `<details>` real |
+| Fórmula (KaTeX) | `::math[...]` (bloco) / `:math[...]` (inline) | `plugins/mathDirectives.tsx` |
+| Texto destacado | `:mark[...]` | `plugins/markDirective.tsx` → `<mark>` |
+| Palavra-chave (`#frontend`) | `#palavra` no Markdown salvo; `:tag[palavra]` só em memória | `plugins/hashtagTransform.ts` + `plugins/tagDirective.tsx` |
+| Diagrama | ` ```mermaid ` | `plugins/mermaidCodeBlock.tsx` (renderiza com a lib `mermaid`) |
+| Gráfico | ` ```chart ` (corpo = JSON: tipo + linhas) | `plugins/chartCodeBlock.tsx` + `ChartDataDialog.tsx` (lib `recharts`) |
+| Link para outro card | `[Título](card://id)` | link Markdown normal; clique interceptado em `CardNotebook.handleContentClick` |
+
+Diretivas usam a sintaxe de [`remark-directive`](https://github.com/micromark/micromark-extension-directive)
+(`:nome[]`, `::nome[]`, `:::nome`), suportada nativamente pelo MDXEditor via `directivesPlugin`.
+
+### Palavras-chave (`#tag`)
+
+O MDXEditor não expõe API pública pra registrar nós Lexical customizados (só diretivas
+Markdown), então `#palavra` não pode virar um chip colorido "ao vivo" enquanto o usuário digita
+sem isso. Solução: o Markdown **salvo no banco** guarda `#palavra` literal (portátil, grep-ável
+fora do app); na borda com o editor (`expandHashtagsForEditor`/`collapseHashtagsForStorage`),
+convertemos pra `:tag[palavra]` só em memória, que tem editor visual próprio. A conversão nunca
+mexe em conteúdo dentro de bloco de código ou crases.
+
+### Comandos "/"
+
+O MDXEditor não tem um menu "/" nativo (diferente do BlockNote). `plugins/slashMenu.tsx`
+implementa um usando só a API pública: escuta `input`/`keydown` no elemento raiz do editor
+(`editorRootElementRef$`), calcula a posição do popup pela `Range` da seleção, e ao confirmar um
+comando apaga o texto `/consulta` digitado (seleciona o intervalo e usa
+`document.execCommand('delete')`, que passa pelo pipeline nativo de edição que o Lexical já
+escuta) e executa a ação via sinais públicos (`insertMarkdown$`, `insertCodeBlock$`,
+`insertTable$`, `insertDirective$`, `applyListType$`, `convertSelectionToNode$`). Renderizado
+como *top area child* (`addTopAreaChild$`) — o único ponto de extensão que roda **dentro** da
+árvore/realm do MDXEditor, por isso os hooks `usePublisher`/`useCellValue` funcionam nele.
+
+### Imagens
+
+Colar (`Ctrl+V`), arrastar/soltar e selecionar usam o mesmo `imageUploadHandler` do
+`imagePlugin` (`plugins/imageUpload.ts`): a imagem é gravada como anexo do card (mesmo storage
+de `attachmentService`, nunca Base64) e o Markdown guarda só
+`ldattach://<cardId>/<attachmentId>`. Esse esquema customizado é registrado no processo main
+(`protocol.handle('ldattach', ...)` em `src/main/index.ts`) e resolve o arquivo verificando que
+o `cardId` da URL bate com o dono real do anexo — um caderno não consegue puxar o anexo de
+outro card. Redimensionar/alinhar imagem **não foi implementado**: o MDXEditor não tem suporte
+nativo a isso (exigiria um nó de imagem customizado, fora do escopo de "não construir um editor
+do zero") — ver limitações em `docs/roadmap.md`.
+
+### Salvamento
+
+Autosave com debounce de 1,2s (`CardNotebook.scheduleSave`), indicador Salvando/Salvo/Erro,
+save forçado no `unmount` do componente (sair da aba/tela não perde edição pendente). Trava
+otimista: cada save exige a `baseVersion` lida por último; se não bater (outra janela salvou
+por cima), o save é recusado e a UI oferece recarregar a versão mais recente ou sobrescrever
+mesmo assim — nunca sobrescreve silenciosamente. Histórico de versões: cada save grava um
+snapshot em `notebook_versions`; restaurar uma versão antiga grava o conteúdo dela como uma
+versão **nova** (histórico nunca é apagado).
+
+### Sem sistema de usuários
+
+LearnDeck é um app desktop **single-user local** (sem tabela `users`, sem login). A spec original
+pedia "permissões" e "usuário responsável pela última edição" — como não existe conceito de
+usuário no app, essas partes foram simplificadas: o caderno segue as mesmas (ausência de)
+permissões de todo o resto do app, e o registro de autoria não se aplica — só `updatedAt` é
+mostrado. Ver [`decisions.md`](./decisions.md).
+
 ## Preparando o terreno para o futuro (sem implementar agora)
 
 - **Dashboard/métricas**: as tabelas (`study_sessions`, `pomodoros`, `status_history`) já

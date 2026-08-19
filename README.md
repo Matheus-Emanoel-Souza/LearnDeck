@@ -72,7 +72,9 @@ próprio app).
    - **cards relacionados** (pré-requisito, bloqueia, relacionado, parte de), com busca por
      título ou seleção por lista completa do workspace, e navegação direta entre cards ligados;
    - **arquivos anexados** (selecionar, abrir com o programa padrão, remover);
-   - **prazo** (data + hora) e **subtarefas** (com prazo próprio e marcação de concluída).
+   - **prazo** (data + hora) e **subtarefas** (com prazo próprio e marcação de concluída);
+   - aba **Caderno**: documentação técnica em Markdown com editor visual, separada dos
+     apontamentos (que continuam sendo o histórico cronológico).
 5. **Calendário e notificações** — visão mensal de prazos (cards e subtarefas) com clique
    abrindo o card correspondente, e uma central de notificações com alertas de vencimento
    (deduplicados, marcáveis como lidos).
@@ -101,6 +103,10 @@ Ver estado detalhado em [`docs/features.md`](docs/features.md) e o histórico co
 - Relacionamentos entre cards (pré-requisito, bloqueia, relacionado, parte de), com busca ou
   seleção por lista no workspace inteiro
 - Anexos, prazos (card e subtarefa), subtarefas, calendário e central de notificações de atraso
+- **Caderno do card**: documentação técnica em Markdown com editor visual (MDXEditor) — modo
+  visual e Markdown, modelos (em branco/técnico), imagens via anexo, blocos de informação/aviso/
+  erro/sucesso, seção recolhível, fórmulas (KaTeX), diagramas (Mermaid), gráficos, palavras-chave
+  `#tag`, link entre cards, comandos `/`, autosave com histórico de versões
 - Dashboard com contagens por status, horas estudadas, Pomodoros e gráficos (pizza por matéria,
   linha por semana)
 - Tela de Configurações com verificação manual de atualizações
@@ -133,6 +139,7 @@ automaticamente em `%APPDATA%\LearnDeck\learndeck.db` no primeiro boot.
 ```bash
 npm run typecheck   # checa os três tsconfig (main, preload, renderer)
 npm run lint        # ESLint
+npm run test         # testes unitários (Vitest)
 npm run build        # build de produção (sem empacotar instalador)
 npm run dist          # build + gera o instalador .exe em dist/
 ```
@@ -191,6 +198,10 @@ Detalhes completos em [`docs/architecture.md`](docs/architecture.md).
 - [electron-builder](https://www.electron.build/) (empacotamento `.exe`)
 - [electron-updater](https://www.electron.build/auto-update) (atualização automática via GitHub
   Releases)
+- [MDXEditor](https://mdxeditor.dev/) + [mermaid](https://mermaid.js.org/) +
+  [KaTeX](https://katex.org/) + [Recharts](https://recharts.org/) (Caderno do card — editor
+  Markdown visual, diagramas, fórmulas e gráficos)
+- [Vitest](https://vitest.dev/) (testes unitários)
 
 ## 📖 Documentação adicional
 

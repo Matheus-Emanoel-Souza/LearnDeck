@@ -235,6 +235,34 @@ Subtarefas de um card, com prazo próprio independente do prazo do card pai
 | created_at | TEXT | |
 | updated_at | TEXT | |
 
+### `notebooks` / `notebook_versions`
+
+Caderno do card (`006_notebooks.sql`) — documentação técnica em Markdown, 1:1 com o card
+(`card_id UNIQUE`), criado sob demanda no primeiro save. `version` é a trava otimista usada
+pelo autosave (ver `docs/architecture.md#caderno-do-card`); cada save bem-sucedido também grava
+um snapshot em `notebook_versions`, formando o histórico (nunca apagado, nem ao restaurar uma
+versão antiga).
+
+| Coluna (`notebooks`) | Tipo | Notas |
+|---|---|---|
+| id | TEXT PK | UUID |
+| card_id | TEXT FK → cards.id (CASCADE), UNIQUE | 1 caderno por card |
+| content_markdown | TEXT | fonte da verdade — Markdown puro, incluindo as diretivas dos blocos personalizados |
+| version | INTEGER | sobe 1 a cada save; usada como trava otimista |
+| created_at | TEXT | |
+| updated_at | TEXT | |
+
+| Coluna (`notebook_versions`) | Tipo | Notas |
+|---|---|---|
+| id | TEXT PK | UUID |
+| notebook_id | TEXT FK → notebooks.id (CASCADE) | |
+| version | INTEGER | mesma numeração de `notebooks.version` no momento do save |
+| content_markdown | TEXT | snapshot completo daquela versão |
+| created_at | TEXT | |
+
+Não há tabela de usuários no app (single-user local — ver `docs/decisions.md`), então não existe
+coluna de "autor da edição"; só `updated_at` é rastreado.
+
 ### `notifications`
 
 Alertas de vencimento gerados pelo `notificationService` (card ou subtarefa atrasados), lidos
@@ -268,6 +296,7 @@ notificações para o mesmo vencimento exato.
 - `attachments(card_id)`
 - `subtasks(card_id)`, `subtasks(due_date)`
 - `notifications(workspace_id)`, `notifications(workspace_id, is_read)`
+- `notebook_versions(notebook_id, version DESC)`
 
 ## Migrations
 
@@ -283,3 +312,4 @@ migrations pendentes — sem dependência externa (nada de `knex`/`prisma migrat
 | `003_column_color.sql` | Adiciona `board_columns.color` |
 | `004_attachments.sql` | Tabela `attachments` |
 | `005_deadlines_subtasks_notifications.sql` | `cards.due_date`/`due_time`, tabelas `subtasks` e `notifications` |
+| `006_notebooks.sql` | Tabelas `notebooks` e `notebook_versions` (Caderno do card) |

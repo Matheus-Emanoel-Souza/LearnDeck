@@ -18,9 +18,13 @@ import type {
   CreateSubtaskInput,
   DashboardSummary,
   Group,
+  Notebook,
+  NotebookVersion,
   Pomodoro,
   PomodoroConfig,
   PomodoroKind,
+  SaveNotebookInput,
+  SaveNotebookResult,
   StatusHistoryEntry,
   StudySession,
   Subtask,
@@ -81,7 +85,18 @@ const api = {
     pickAndAdd: (cardId: string): Promise<Attachment[]> =>
       ipcRenderer.invoke('attachments:pickAndAdd', cardId),
     open: (id: string): Promise<void> => ipcRenderer.invoke('attachments:open', id),
-    remove: (id: string): Promise<void> => ipcRenderer.invoke('attachments:remove', id)
+    remove: (id: string): Promise<void> => ipcRenderer.invoke('attachments:remove', id),
+    addFromBuffer: (cardId: string, fileName: string, data: ArrayBuffer, mimeType: string): Promise<Attachment> =>
+      ipcRenderer.invoke('attachments:addFromBuffer', cardId, fileName, data, mimeType)
+  },
+  notebooks: {
+    getByCard: (cardId: string): Promise<Notebook> => ipcRenderer.invoke('notebooks:getByCard', cardId),
+    save: (input: SaveNotebookInput): Promise<SaveNotebookResult> =>
+      ipcRenderer.invoke('notebooks:save', input),
+    listVersions: (cardId: string): Promise<NotebookVersion[]> =>
+      ipcRenderer.invoke('notebooks:listVersions', cardId),
+    restoreVersion: (cardId: string, version: number, baseVersion: number): Promise<SaveNotebookResult> =>
+      ipcRenderer.invoke('notebooks:restoreVersion', cardId, version, baseVersion)
   },
   subtasks: {
     listByCard: (cardId: string): Promise<Subtask[]> => ipcRenderer.invoke('subtasks:listByCard', cardId),

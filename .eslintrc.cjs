@@ -13,6 +13,11 @@ module.exports = {
   settings: { react: { version: 'detect' } },
   rules: {
     'react/react-in-jsx-scope': 'off',
+    // Projeto é 100% TypeScript — os tipos das props já são checados pelo
+    // tsc; react/prop-types (voltada pra PropTypes em runtime) só dá falso
+    // positivo em componentes inline (ex.: os Editor de diretiva do
+    // MDXEditor em components/notebook/plugins).
+    'react/prop-types': 'off',
     '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }]
   },
   ignorePatterns: ['out', 'dist', 'node_modules']

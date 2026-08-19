@@ -24,6 +24,20 @@ em alto nível.
 - Relacionamentos entre cards (pré-requisito, bloqueia, relacionado, parte de), com busca por
   título ou por lista completa do workspace, e navegação direta entre cards relacionados
 - Anexar arquivos ao card: selecionar, abrir com o programa padrão do sistema, remover
+- **Caderno do card** (aba "Caderno" na tela do card): documentação técnica em Markdown com
+  editor visual (MDXEditor) — modo visual e modo Markdown, sem perda de conteúdo na troca;
+  títulos, negrito/itálico/tachado, marcador/destaque via `==texto==`, listas (comum, numerada,
+  checklist), citação, tabela, link, separador, blocos de informação/aviso/erro/sucesso
+  (admonitions), seção recolhível, bloco de código com destaque de sintaxe (SQL incluso),
+  diagramas Mermaid, fórmulas KaTeX (inline e bloco), gráfico de barra/linha/pizza (dados
+  colados ou digitados, sem escrever código), palavras-chave `#tag` com aparência própria, link
+  para outro card (`[Título](card://id)`, navega dentro do app), comandos `/` (título, lista,
+  tabela, código, SQL, Mermaid, gráfico, fórmula, blocos, seção recolhível, imagem, vincular
+  ticket) e barra de ferramentas. Imagem colada/arrastada/selecionada vira anexo do card (nunca
+  Base64 no Markdown). Modelo em branco ou modelo de documentação técnica (9 seções) ao abrir
+  um caderno vazio. Salvamento automático com indicador (Salvando/Salvo/Erro), trava otimista
+  contra sobrescrita silenciosa entre janelas, e histórico de versões com restauração. Ver
+  [`architecture.md`](./architecture.md#caderno-do-card) e [`database.md`](./database.md).
 - Prazo opcional por card (data + hora) e por subtarefa, com indicação visual de atraso
 - Subtarefas por card, com prazo próprio e marcação de concluída
 - Calendário (`CalendarPage`): visão mensal de cards e subtarefas com prazo, clique abre o

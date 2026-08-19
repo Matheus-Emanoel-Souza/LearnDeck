@@ -14,18 +14,27 @@
     "typecheck:web": "tsc --noEmit -p tsconfig.web.json --composite false",
     "start": "electron-vite preview",
     "dist": "npm run build && electron-builder --win",
-    "lint": "eslint . --ext .ts,.tsx"
+    "lint": "eslint . --ext .ts,.tsx",
+    "test": "vitest run"
   },
   "dependencies": {
+    "@mdxeditor/editor": "^4.2.0",
     "better-sqlite3": "^11.9.1",
+    "dompurify": "^3.4.14",
     "electron-updater": "^6.8.9",
+    "katex": "^0.18.4",
+    "mdast-util-directive": "^3.1.0",
+    "mdast-util-to-string": "^4.0.0",
+    "mermaid": "^11.17.0",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "recharts": "^3.10.1"
   },
   "devDependencies": {
     "@electron-toolkit/preload": "^3.0.1",
     "@electron-toolkit/tsconfig": "^1.0.1",
     "@types/better-sqlite3": "^7.6.11",
+    "@types/katex": "^0.16.8",
     "@types/node": "^20.14.9",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
@@ -38,6 +47,7 @@
     "eslint": "^8.57.0",
     "eslint-plugin-react": "^7.34.3",
     "eslint-plugin-react-hooks": "^4.6.2",
-    "typescript": "^5.5.2"
+    "typescript": "^5.5.2",
+    "vitest": "^4.1.11"
   }
 }

@@ -22,6 +22,7 @@ import CardRelations from '../components/CardRelations'
 import CardAttachments from '../components/CardAttachments'
 import CardSubtasks from '../components/CardSubtasks'
 import CardIdBadge from '../components/CardIdBadge'
+import CardNotebook from '../components/notebook/CardNotebook'
 
 export type CardDetailFocus = 'timer' | 'comment' | 'relations'
 
@@ -50,6 +51,7 @@ export default function CardDetailPage({
   onNavigateToCard,
   initialFocus
 }: CardDetailPageProps): JSX.Element {
+  const [activeTab, setActiveTab] = useState<'details' | 'notebook'>('details')
   const [card, setCard] = useState(initialCard)
   const [description, setDescription] = useState(initialCard.description ?? '')
   const [descriptionDirty, setDescriptionDirty] = useState(false)
@@ -110,6 +112,7 @@ export default function CardDetailPage({
   }, [card.id])
 
   useEffect(() => {
+    setActiveTab('details')
     setCard(initialCard)
     setDescription(initialCard.description ?? '')
     setDescriptionDirty(false)
@@ -271,6 +274,26 @@ export default function CardDetailPage({
 
       {error && <p className="status status--error">{error}</p>}
 
+      <div className="card-page__tabs">
+        <button
+          type="button"
+          className={`card-page__tab${activeTab === 'details' ? ' card-page__tab--active' : ''}`}
+          onClick={() => setActiveTab('details')}
+        >
+          Detalhes
+        </button>
+        <button
+          type="button"
+          className={`card-page__tab${activeTab === 'notebook' ? ' card-page__tab--active' : ''}`}
+          onClick={() => setActiveTab('notebook')}
+        >
+          Caderno
+        </button>
+      </div>
+
+      {activeTab === 'notebook' ? (
+        <CardNotebook cardId={card.id} workspaceId={workspaceId} onNavigateToCard={onNavigateToCard} />
+      ) : (
       <div className="card-page__body">
         <div className="card-page__main">
           <section className="card-section">
@@ -480,6 +503,7 @@ export default function CardDetailPage({
           </section>
         </aside>
       </div>
+      )}
     </div>
   )
 }

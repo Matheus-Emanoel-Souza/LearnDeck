@@ -60,3 +60,8 @@ export function insertAttachmentRow(
 export function deleteAttachmentRow(db: Database.Database, id: string): void {
   db.prepare('DELETE FROM attachments WHERE id = ?').run(id)
 }
+
+export function getAttachment(db: Database.Database, id: string): Attachment | undefined {
+  const row = getAttachmentRow(db, id)
+  return row ? toAttachment(row) : undefined
+}

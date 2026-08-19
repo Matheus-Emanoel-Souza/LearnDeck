@@ -97,3 +97,35 @@ conversa). Mantido esse nome como identidade oficial do produto, em vez de renom
 
 **Motivo:** evitar inconsistência entre nome do repositório/pasta e nome exibido no app;
 confirmado com o usuário.
+
+## 2026-08-19 — Caderno do card: MDXEditor, sem sistema de usuários, escopo completo de recursos avançados
+
+**Decisão:** implementar o Caderno usando **MDXEditor** (Markdown como fonte real, não
+BlockNote/JSON), sem adicionar tabela `users`/login ao app, com todos os recursos avançados
+pedidos (KaTeX, Mermaid, gráfico) implementados nesta etapa. As três alternativas foram
+perguntadas ao usuário antes de começar; essas foram as respostas.
+
+**Motivo (sem usuários):** LearnDeck é single-user local, sem tabela `users` nem login em
+lugar nenhum do app hoje. A spec original (pensada pra um sistema de tickets multi-usuário,
+estilo TiFlux) pedia permissões de edição e "usuário responsável pela última edição" — como
+não existe conceito de usuário no app, isso foi simplificado: sem controle de permissão
+(mesmo comportamento do resto do app) e sem coluna de autoria (só `updatedAt`). A trava
+otimista (`notebooks.version`) foi mantida mesmo assim, porque útil independente de multi-user
+(protege contra a mesma pessoa com duas janelas abertas no mesmo card).
+
+**Motivo (MDXEditor vs. BlockNote):** BlockNote tem UI mais "estilo Notion" pronta (blocos,
+drag handle, `/` nativo), mas sua fonte de verdade é um JSON de blocos — a exportação pra
+Markdown é uma tradução aproximada, o que conflita com o requisito "Markdown é a fonte
+principal dos dados". MDXEditor edita o próprio Markdown (via Lexical + `remark`/`mdast`), então
+o que fica salvo no banco é exatamente Markdown padrão, portátil fora do app.
+
+**Trade-off aceito:** o MDXEditor não tem menu `/` nem suporte a nós de texto customizados
+(tipo hashtag) na API pública — ambos foram implementados por fora (ver
+`docs/architecture.md#caderno-do-card`) em vez de mexer nos internos do Lexical, o que
+funciona mas é mais frágil a mudanças de versão do MDXEditor do que uma API oficial seria.
+Redimensionar/alinhar imagem não foi implementado (sem suporte nativo, exigiria nó de imagem
+customizado) — ver `docs/roadmap.md`.
+
+**Quando revisitar:** se o app ganhar multi-usuário (sync em nuvem, workspace compartilhado —
+já cogitado em `architecture.md`), a trava otimista do caderno vira a base pra um controle de
+conflito de verdade, e cabe adicionar `edited_by` a `notebooks`/`notebook_versions`.

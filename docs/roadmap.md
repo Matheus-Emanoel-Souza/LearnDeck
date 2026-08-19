@@ -115,6 +115,22 @@ Pós-MVP, incrementos pedidos depois da Fase 9.
 - [x] Menu de ações do card (⋮) no Kanban, substituindo a necessidade de abrir o card pra achar
       cronômetro/comentário/relação: Novo apontamento, Enviar comunicação, Agrupar ticket, Abrir
       ticket filho — atalhos para funcionalidades já existentes, sem lógica nova
+- [x] Caderno do card: aba com editor Markdown visual (MDXEditor), modelo em branco/técnico,
+      autosave com trava otimista e histórico de versões, imagens via anexo (colar/arrastar/
+      selecionar), blocos de informação/aviso/erro/sucesso, seção recolhível, fórmulas KaTeX,
+      diagramas Mermaid, gráficos, palavras-chave `#tag`, link entre cards, comandos `/` — ver
+      `docs/architecture.md#caderno-do-card`
+
+## Limitações conhecidas do Caderno (não implementadas nesta etapa)
+
+- Redimensionar ou alinhar imagem: sem suporte nativo no MDXEditor, exigiria um nó de imagem
+  customizado (fora do escopo de reaproveitar uma biblioteca pronta).
+- Sem "usuário responsável pela última edição": o app não tem sistema de usuários (ver
+  `docs/decisions.md`), só a data/hora da última atualização é mostrada.
+- Testes automatizados do editor em si (colar imagem, alternar visual/Markdown, diagramas)
+  ficaram só como roteiro manual (ver resumo da implementação) — o projeto não tinha framework
+  de testes antes desta etapa; os testes automatizados novos (`npm test`) cobrem a lógica pura
+  (repositório do caderno com trava otimista, parser de gráfico, conversão de `#tag`).
 
 ## Backlog futuro (fora do MVP, arquitetura já permite)
 
@@ -123,3 +139,4 @@ Pós-MVP, incrementos pedidos depois da Fase 9.
 - Exportação de dados (CSV/JSON)
 - Atalhos de teclado globais, tray icon com timer visível
 - Temas (claro/escuro)
+- Caderno: redimensionamento/alinhamento de imagem, busca/filtro por `#tag` no workspace inteiro

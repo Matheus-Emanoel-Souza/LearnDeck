@@ -1,4 +1,4 @@
-import { app, BrowserWindow, shell } from 'electron'
+import { app, BrowserWindow, protocol, shell } from 'electron'
 import path from 'node:path'
 import { getDatabase, closeDatabase } from './db/connection'
 import { runMigrations } from './db/migrate'
@@ -17,14 +17,38 @@ import { registerDashboardIpc } from './ipc/dashboard'
 import { registerSubtasksIpc } from './ipc/subtasks'
 import { registerNotificationsIpc } from './ipc/notifications'
 import { registerCalendarIpc } from './ipc/calendar'
+import { registerNotebooksIpc } from './ipc/notebooks'
 import { registerUpdaterIpc } from './ipc/updater'
 import { initAutoUpdater } from './updater'
 import { ensureDefaultWorkspace } from './repositories/workspaceRepository'
 import { scanAndBroadcast } from './notificationScanner'
+import { readAttachmentFile } from './services/attachmentService'
 
 const OVERDUE_SCAN_INTERVAL_MS = 60_000
 
 const isDev = !app.isPackaged
+
+// Precisa ser registrado antes de app.whenReady — define `ldattach` como um
+// scheme "padrão" (permite host/path e é aceito em <img src>), mas sem
+// privilégios de acesso a Node; só o handler abaixo decide o que ele serve.
+protocol.registerSchemesAsPrivileged([
+  { scheme: 'ldattach', privileges: { standard: true, secure: true, supportFetchAPI: true, corsEnabled: true, stream: false } }
+])
+
+/** Serve imagens do caderno direto do storage de anexos, sem passar por
+ * Base64 no Markdown. URL: ldattach://<cardId>/<attachmentId> — o cardId na
+ * própria URL é o que permite ao service recusar servir o anexo de um card
+ * diferente do caderno que está pedindo (ver readAttachmentFile). */
+function registerAttachmentProtocol(db: ReturnType<typeof getDatabase>): void {
+  protocol.handle('ldattach', (request) => {
+    const url = new URL(request.url)
+    const cardId = url.host
+    const attachmentId = url.pathname.replace(/^\//, '')
+    const file = readAttachmentFile(db, cardId, attachmentId)
+    if (!file) return new Response(null, { status: 404 })
+    return new Response(file.data, { headers: { 'Content-Type': file.mimeType } })
+  })
+}
 
 function createMainWindow(): void {
   const win = new BrowserWindow({
@@ -75,7 +99,9 @@ app.whenReady().then(() => {
   registerSubtasksIpc(db)
   registerNotificationsIpc(db)
   registerCalendarIpc(db)
+  registerNotebooksIpc(db)
   registerUpdaterIpc()
+  registerAttachmentProtocol(db)
 
   createMainWindow()
   initAutoUpdater()

@@ -2052,3 +2052,486 @@ select {
   gap: 0.6rem;
   flex-shrink: 0;
 }
+
+/* ---- Caderno do card (aba "Caderno" em CardDetailPage) ---- */
+
+.card-page__tabs {
+  display: flex;
+  gap: 0.4rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 1rem;
+}
+
+.card-page__tab {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 0.55rem 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.card-page__tab:hover {
+  color: var(--text);
+}
+
+.card-page__tab--active {
+  color: var(--accent-strong);
+  border-bottom-color: var(--accent);
+}
+
+.notebook {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.notebook__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.notebook__conflict-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  background: var(--warn-soft);
+  border: 1px solid var(--warn);
+  border-radius: var(--radius-md);
+  padding: 0.6rem 0.9rem;
+  font-size: 0.85rem;
+}
+
+.notebook__layout {
+  display: grid;
+  grid-template-columns: 1fr 220px;
+  gap: 1.2rem;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .notebook__layout {
+    grid-template-columns: 1fr;
+  }
+  .notebook-toc {
+    display: none;
+  }
+}
+
+.notebook__editor {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.notebook__editor .mdxeditor-toolbar {
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-elevated-2);
+  flex-wrap: wrap;
+}
+
+.notebook__content {
+  max-width: 740px;
+  margin: 0 auto;
+  padding: 1.5rem 1.75rem 3rem;
+  min-height: 320px;
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+.notebook__content h1,
+.notebook__content h2,
+.notebook__content h3 {
+  color: var(--text);
+  font-weight: 700;
+  margin: 1.4em 0 0.5em;
+}
+
+.notebook__content h1 {
+  font-size: 1.6rem;
+}
+.notebook__content h2 {
+  font-size: 1.3rem;
+}
+.notebook__content h3 {
+  font-size: 1.1rem;
+}
+
+.notebook__content table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.notebook__content th,
+.notebook__content td {
+  border: 1px solid var(--border);
+  padding: 0.4rem 0.6rem;
+}
+
+.notebook__content blockquote {
+  border-left: 3px solid var(--accent);
+  margin: 0.8em 0;
+  padding: 0.2em 1em;
+  color: var(--text-muted);
+  background: var(--bg-elevated-2);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+
+.mdxeditor-toolbar-button {
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  padding: 0.3rem 0.5rem;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.mdxeditor-toolbar-button:hover {
+  background: var(--bg-elevated-3);
+}
+
+/* ---- Índice lateral ---- */
+
+.notebook-toc {
+  position: sticky;
+  top: 0.5rem;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 0.9rem 1rem;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.notebook-toc h4 {
+  margin: 0 0 0.5rem;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-muted);
+}
+
+.notebook-toc ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.notebook-toc__item--h2 {
+  padding-left: 0.7rem;
+}
+.notebook-toc__item--h3 {
+  padding-left: 1.4rem;
+}
+
+.notebook-toc .link-button {
+  font-size: 0.8rem;
+  text-align: left;
+}
+
+/* ---- Indicador de salvamento ---- */
+
+.notebook-save-indicator {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.notebook-save-indicator--saving {
+  color: var(--warn);
+}
+.notebook-save-indicator--saved {
+  color: var(--ok);
+}
+.notebook-save-indicator--error,
+.notebook-save-indicator--conflict {
+  color: var(--error);
+}
+
+.notebook-save-indicator__meta {
+  color: var(--text-muted);
+}
+
+/* ---- Modelo inicial (em branco / técnico) ---- */
+
+.notebook-template-picker {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  text-align: center;
+}
+
+.notebook-template-picker__hint {
+  color: var(--text-muted);
+  margin-bottom: 1.2rem;
+}
+
+.notebook-template-picker__options {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.notebook-template-picker__option {
+  width: min(280px, 100%);
+  background: var(--bg-elevated-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.notebook-template-picker__option:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.notebook-template-picker__option span {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+/* ---- Menu "/" ---- */
+
+.notebook-slash-menu {
+  position: fixed;
+  z-index: 60;
+  min-width: 220px;
+  max-height: 260px;
+  overflow-y: auto;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  padding: 0.3rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.notebook-slash-menu__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 0.4rem 0.6rem;
+  text-align: left;
+  font-size: 0.85rem;
+  cursor: pointer;
+  color: var(--text);
+}
+
+.notebook-slash-menu__item--active,
+.notebook-slash-menu__item:hover {
+  background: var(--accent-soft);
+}
+
+.notebook-slash-menu__hint {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-family: monospace;
+}
+
+/* ---- Diagrama Mermaid ---- */
+
+.notebook-mermaid {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 0.8rem;
+  margin: 0.6rem 0;
+  background: var(--bg-elevated-2);
+}
+
+.notebook-mermaid__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.notebook-mermaid__label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-muted);
+}
+
+.notebook-mermaid__source {
+  width: 100%;
+  font-family: monospace;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.6rem;
+}
+
+.notebook-mermaid__canvas {
+  display: flex;
+  justify-content: center;
+  overflow-x: auto;
+}
+
+/* ---- Gráfico ---- */
+
+.notebook-chart {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 0.8rem;
+  margin: 0.6rem 0;
+  background: var(--bg-elevated-2);
+}
+
+.notebook-chart__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.notebook-chart__label {
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+/* ---- Fórmulas (KaTeX) ---- */
+
+.notebook-math--block {
+  margin: 0.6rem 0;
+  text-align: center;
+}
+
+.notebook-math--inline {
+  cursor: text;
+}
+
+.notebook-math__rendered {
+  cursor: text;
+  display: inline-block;
+}
+
+.notebook-math__error {
+  color: var(--error);
+  font-family: monospace;
+}
+
+.notebook-math__input {
+  font-family: monospace;
+  background: var(--bg-elevated-2);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  padding: 0.4rem 0.6rem;
+  width: 100%;
+}
+
+.notebook-math__input--inline {
+  width: auto;
+  min-width: 120px;
+  padding: 0.1rem 0.3rem;
+}
+
+/* ---- Texto destacado (:mark[]) ---- */
+
+.notebook-highlight {
+  background: var(--warn-soft);
+  padding: 0 0.15em;
+  border-radius: 3px;
+}
+
+/* ---- Palavras-chave (#tag) ---- */
+
+.notebook-tag {
+  display: inline-block;
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  border-radius: 999px;
+  padding: 0.05rem 0.55rem;
+  font-size: 0.85em;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.notebook-tag--editing {
+  font: inherit;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  padding: 0.05rem 0.55rem;
+}
+
+/* ---- Seção recolhível ---- */
+
+.notebook-details {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 0.6rem 0.9rem;
+  margin: 0.6rem 0;
+  background: var(--bg-elevated-2);
+}
+
+.notebook-details__title {
+  font: inherit;
+  font-weight: 700;
+  background: none;
+  border: none;
+  cursor: text;
+  width: calc(100% - 1.5rem);
+}
+
+.notebook-details__body {
+  margin-top: 0.5rem;
+  padding-left: 0.2rem;
+}
+
+/* ---- Diálogo de vínculo de ticket ---- */
+
+.notebook-cardlink-results {
+  list-style: none;
+  margin: 0.5rem 0;
+  padding: 0;
+  max-height: 220px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+/* ---- Histórico de versões ---- */
+
+.notebook-version-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.notebook-version-list__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.7rem;
+}
+
+.notebook-version-list__date {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
