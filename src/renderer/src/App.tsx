@@ -74,6 +74,10 @@ export default function App(): JSX.Element {
           columns={globalColumns}
           onBack={() => setGlobalCard(null)}
           onNavigateToCard={openCardGlobally}
+          onDelete={async (cardId) => {
+            await window.api.cards.delete(cardId)
+            setGlobalCard(null)
+          }}
         />
       </div>
     )

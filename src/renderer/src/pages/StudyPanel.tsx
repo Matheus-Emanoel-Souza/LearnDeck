@@ -252,6 +252,16 @@ export default function StudyPanel({ workspaceId }: StudyPanelProps): JSX.Elemen
     if (selectedGroupId) reloadCards(selectedGroupId).catch(() => undefined)
   }
 
+  async function handleDeleteCard(cardId: string): Promise<void> {
+    try {
+      await window.api.cards.delete(cardId)
+      handleBackFromCard()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err))
+      throw err
+    }
+  }
+
   const selectedGroup = groups.find((g) => g.id === selectedGroupId) ?? null
 
   if (viewingCard) {
@@ -262,6 +272,7 @@ export default function StudyPanel({ workspaceId }: StudyPanelProps): JSX.Elemen
         columns={viewingColumns}
         onBack={handleBackFromCard}
         onNavigateToCard={(cardId) => void handleNavigateToCard(cardId)}
+        onDelete={handleDeleteCard}
         initialFocus={viewingCardFocus}
       />
     )
