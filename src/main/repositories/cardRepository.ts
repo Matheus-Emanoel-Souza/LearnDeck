@@ -52,6 +52,30 @@ export function getCard(db: Database.Database, id: string): Card | undefined {
   return row ? toCard(row) : undefined
 }
 
+/**
+ * Localiza um card do workspace pelo ID — aceita tanto o UUID completo
+ * (colado via "copiar ID") quanto o prefixo curto de 8 caracteres exibido no
+ * CardIdBadge. Usado pela busca "procurar ticket pelo ID" do Quadro.
+ */
+export function findCardByIdInWorkspace(
+  db: Database.Database,
+  workspaceId: string,
+  idQuery: string
+): Card | undefined {
+  const escaped = idQuery.replace(/[%_\\]/g, '\\$&')
+  const row = db
+    .prepare(
+      `SELECT c.* FROM cards c
+       JOIN groups g ON g.id = c.group_id
+       WHERE g.workspace_id = ? AND c.deleted_at IS NULL
+         AND (c.id = ? OR c.id LIKE ? ESCAPE '\\')
+       ORDER BY c.id = ? DESC, c.created_at ASC
+       LIMIT 1`
+    )
+    .get(workspaceId, idQuery, `${escaped}%`, idQuery) as CardRow | undefined
+  return row ? toCard(row) : undefined
+}
+
 /** Cards de um grupo específico (não inclui subgrupos — ver docs/roadmap.md, Fase 2). */
 export function listCardsByGroup(db: Database.Database, groupId: string): Card[] {
   const rows = db

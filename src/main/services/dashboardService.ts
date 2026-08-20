@@ -5,7 +5,7 @@ import {
   countOpenCardsBySubject,
   listCardsForWorkspace
 } from '../repositories/cardRepository'
-import { listBoardColumns } from '../repositories/boardColumnRepository'
+import { listBoardColumnsForWorkspace } from '../repositories/boardColumnRepository'
 import { countCompletedFocusPomodorosForWorkspace } from '../repositories/pomodoroRepository'
 import { sumClosedSessionSecondsForWorkspace } from '../repositories/studySessionRepository'
 
@@ -32,23 +32,34 @@ function buildOpenedTrend(db: Database.Database, workspaceId: string): DailyCard
 
 export function getDashboardSummary(db: Database.Database, workspaceId: string): DashboardSummary {
   const cards = listCardsForWorkspace(db, workspaceId)
-  const columns = listBoardColumns(db, workspaceId)
+  // Cada matéria tem seu próprio conjunto de colunas agora — pega o de todas
+  // pra manter o dashboard como uma visão do workspace inteiro.
+  const columns = listBoardColumnsForWorkspace(db, workspaceId)
   const isDoneByColumn = new Map(columns.map((c) => [c.id, c.isDone]))
 
-  const countByColumn = new Map<string, number>(columns.map((c) => [c.id, 0]))
+  const countByColumnId = new Map<string, number>()
   let openCount = 0
   let doneCount = 0
 
   for (const card of cards) {
-    countByColumn.set(card.columnId, (countByColumn.get(card.columnId) ?? 0) + 1)
+    countByColumnId.set(card.columnId, (countByColumnId.get(card.columnId) ?? 0) + 1)
     if (isDoneByColumn.get(card.columnId)) doneCount += 1
     else openCount += 1
   }
 
-  const byColumn: ColumnCardCount[] = columns.map((column) => ({
-    columnId: column.id,
-    columnName: column.name,
-    count: countByColumn.get(column.id) ?? 0
+  // Colunas de matérias diferentes com o mesmo nome (ex.: "Backlog" em cada
+  // uma) contam juntas no gráfico — senão a mesma etapa apareceria repetida
+  // uma vez por matéria.
+  const countByName = new Map<string, number>()
+  for (const column of columns) {
+    const count = countByColumnId.get(column.id) ?? 0
+    countByName.set(column.name, (countByName.get(column.name) ?? 0) + count)
+  }
+
+  const byColumn: ColumnCardCount[] = Array.from(countByName.entries()).map(([columnName, count]) => ({
+    columnId: columnName,
+    columnName,
+    count
   }))
 
   return {

@@ -1,6 +1,7 @@
 import type Database from 'better-sqlite3'
 import type { Card, CreateCardInput, UpdateCardInput } from '@shared/types'
 import {
+  findCardByIdInWorkspace,
   getCard,
   insertCardRow,
   insertStatusHistory,
@@ -9,14 +10,6 @@ import {
   updateCardRow
 } from '../repositories/cardRepository'
 import { getDefaultBoardColumn } from '../repositories/boardColumnRepository'
-
-function getWorkspaceIdForGroup(db: Database.Database, groupId: string): string {
-  const row = db.prepare('SELECT workspace_id FROM groups WHERE id = ?').get(groupId) as
-    | { workspace_id: string }
-    | undefined
-  if (!row) throw new Error(`Grupo não encontrado: ${groupId}`)
-  return row.workspace_id
-}
 
 /**
  * Regra de negócio: criar um card grava a linha inicial do histórico
@@ -28,9 +21,8 @@ export function createCard(db: Database.Database, input: CreateCardInput): Card 
   if (!input.title.trim()) throw new Error('Título do card é obrigatório')
 
   const run = db.transaction(() => {
-    const workspaceId = getWorkspaceIdForGroup(db, input.groupId)
-    const defaultColumn = getDefaultBoardColumn(db, workspaceId)
-    if (!defaultColumn) throw new Error('Workspace sem colunas configuradas')
+    const defaultColumn = getDefaultBoardColumn(db, input.groupId)
+    if (!defaultColumn) throw new Error('Matéria sem colunas configuradas')
 
     const card = insertCardRow(db, input, defaultColumn.id)
     insertStatusHistory(db, card.id, null, card.columnId)
@@ -63,4 +55,10 @@ export function listCards(db: Database.Database, groupId: string): Card[] {
 
 export function deleteCard(db: Database.Database, id: string): void {
   softDeleteCard(db, id)
+}
+
+export function findCardByIdQuery(db: Database.Database, workspaceId: string, idQuery: string): Card | undefined {
+  const trimmed = idQuery.trim()
+  if (!trimmed) return undefined
+  return findCardByIdInWorkspace(db, workspaceId, trimmed)
 }

@@ -1,6 +1,6 @@
 import type Database from 'better-sqlite3'
 import type { AppNotification } from '@shared/types'
-import { listBoardColumns } from '../repositories/boardColumnRepository'
+import { listBoardColumnsForWorkspace } from '../repositories/boardColumnRepository'
 import { listCardsWithDueDate } from '../repositories/cardRepository'
 import { listSubtasksWithDueDate } from '../repositories/subtaskRepository'
 import {
@@ -41,7 +41,7 @@ export function scanForOverdue(db: Database.Database, workspaceId: string): bool
   let createdAny = false
 
   const doneColumnIds = new Set(
-    listBoardColumns(db, workspaceId)
+    listBoardColumnsForWorkspace(db, workspaceId)
       .filter((c) => c.isDone)
       .map((c) => c.id)
   )

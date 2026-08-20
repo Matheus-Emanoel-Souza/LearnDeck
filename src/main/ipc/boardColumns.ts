@@ -12,9 +12,7 @@ import {
 } from '../services/boardColumnService'
 
 export function registerBoardColumnsIpc(db: Database.Database): void {
-  ipcMain.handle('boardColumns:list', (_event, workspaceId: string): BoardColumn[] =>
-    listColumns(db, workspaceId)
-  )
+  ipcMain.handle('boardColumns:list', (_event, groupId: string): BoardColumn[] => listColumns(db, groupId))
 
   ipcMain.handle('boardColumns:create', (_event, input: CreateBoardColumnInput): BoardColumn =>
     createColumn(db, input)
@@ -34,8 +32,7 @@ export function registerBoardColumnsIpc(db: Database.Database): void {
 
   ipcMain.handle(
     'boardColumns:reorder',
-    (_event, workspaceId: string, orderedIds: string[]): BoardColumn[] =>
-      reorderColumns(db, workspaceId, orderedIds)
+    (_event, groupId: string, orderedIds: string[]): BoardColumn[] => reorderColumns(db, groupId, orderedIds)
   )
 
   ipcMain.handle('boardColumns:duplicate', (_event, id: string): BoardColumn => duplicateColumn(db, id))

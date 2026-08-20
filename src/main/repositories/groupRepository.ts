@@ -94,3 +94,22 @@ export function updateGroup(db: Database.Database, id: string, patch: UpdateGrou
 export function softDeleteGroup(db: Database.Database, id: string): void {
   db.prepare('UPDATE groups SET deleted_at = ? WHERE id = ?').run(new Date().toISOString(), id)
 }
+
+export function getGroup(db: Database.Database, id: string): Group | undefined {
+  const row = db.prepare('SELECT * FROM groups WHERE id = ?').get(id) as GroupRow | undefined
+  return row ? toGroup(row) : undefined
+}
+
+export function countSubgroups(db: Database.Database, groupId: string): number {
+  const row = db
+    .prepare('SELECT COUNT(*) AS n FROM groups WHERE parent_group_id = ? AND deleted_at IS NULL')
+    .get(groupId) as { n: number }
+  return row.n
+}
+
+export function countCardsInGroup(db: Database.Database, groupId: string): number {
+  const row = db
+    .prepare('SELECT COUNT(*) AS n FROM cards WHERE group_id = ? AND deleted_at IS NULL')
+    .get(groupId) as { n: number }
+  return row.n
+}
