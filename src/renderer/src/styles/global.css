@@ -731,6 +731,12 @@ select {
   color: var(--text-muted);
   font-size: 0.78rem;
   white-space: pre-wrap;
+  /* Trava em 3 linhas pra descrição longa não estufar o card no quadro; o
+     texto completo continua disponível na tela de detalhe. */
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .kanban-card__footer {
