@@ -8,6 +8,7 @@ import NotificationsPage from './pages/NotificationsPage'
 import Settings from './pages/Settings'
 import CardDetailPage from './pages/CardDetailPage'
 import NotificationBell from './components/NotificationBell'
+import ThemeToggle from './components/ThemeToggle'
 
 type Tab = 'board' | 'dashboard' | 'calendar' | 'notifications' | 'settings'
 
@@ -32,12 +33,15 @@ export default function App(): JSX.Element {
 
   const openCardGlobally = useCallback((cardId: string) => {
     if (!info) return
-    Promise.all([window.api.cards.get(cardId), window.api.boardColumns.list(info.workspace.id)])
-      .then(([card, columns]) => {
-        if (card) {
-          setGlobalColumns(columns)
-          setGlobalCard(card)
-        }
+    // Colunas são por matéria agora — só dá pra saber quais depois de ter o
+    // card em mãos (ele pode ser de uma matéria diferente da que está aberta).
+    window.api.cards
+      .get(cardId)
+      .then(async (card) => {
+        if (!card) return
+        const columns = await window.api.boardColumns.list(card.groupId)
+        setGlobalColumns(columns)
+        setGlobalCard(card)
       })
       .catch(() => undefined)
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -117,6 +121,7 @@ export default function App(): JSX.Element {
           onOpenCard={openCardGlobally}
           onViewAll={() => setTab('notifications')}
         />
+        <ThemeToggle />
       </header>
       {tab === 'board' && <StudyPanel workspaceId={info.workspace.id} />}
       {tab === 'dashboard' && (
@@ -136,7 +141,7 @@ export default function App(): JSX.Element {
       )}
       {tab === 'settings' && (
         <div className="card-panel">
-          <Settings currentVersion={info.version} workspaceId={info.workspace.id} />
+          <Settings currentVersion={info.version} />
         </div>
       )}
     </div>
