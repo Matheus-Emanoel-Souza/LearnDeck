@@ -34,5 +34,8 @@ installWebApi()
   })
 
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js').catch(() => {})
+  // import.meta.env.BASE_URL já inclui a barra final (ver vite.web.config.ts) —
+  // sem isso o registro quebra quando o app não está servido na raiz do domínio
+  // (caso do GitHub Pages: /LearnDeck/).
+  navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`).catch(() => {})
 }

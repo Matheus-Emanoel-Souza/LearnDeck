@@ -123,7 +123,9 @@ let sqlJsModulePromise: ReturnType<typeof initSqlJs> | null = null
  * servido da pasta `public/`, ver vite.web.config.ts). */
 export function loadSqlJs(): ReturnType<typeof initSqlJs> {
   if (!sqlJsModulePromise) {
-    sqlJsModulePromise = initSqlJs({ locateFile: (file) => `/${file}` })
+    // import.meta.env.BASE_URL cobre deploy fora da raiz do domínio (ex.:
+    // GitHub Pages em /LearnDeck/) — ver vite.web.config.ts.
+    sqlJsModulePromise = initSqlJs({ locateFile: (file) => `${import.meta.env.BASE_URL}${file}` })
   }
   return sqlJsModulePromise
 }
