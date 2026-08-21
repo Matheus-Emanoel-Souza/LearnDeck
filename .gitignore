@@ -1,8 +1,10 @@
 node_modules/
 out/
+out-web/
 dist/
 *.log
 .env
 .DS_Store
 Thumbs.db
 *.tsbuildinfo
+src/web/public/sql-wasm.wasm
