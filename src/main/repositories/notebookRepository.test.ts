@@ -29,9 +29,9 @@ function makeCard(db: Database.Database): string {
   ).run(groupId, workspaceId, new Date().toISOString(), new Date().toISOString())
   const columnId = randomUUID()
   db.prepare(
-    `INSERT INTO board_columns (id, workspace_id, name, position, is_done, color, created_at, updated_at)
+    `INSERT INTO board_columns (id, group_id, name, position, is_done, color, created_at, updated_at)
      VALUES (?, ?, 'A fazer', 0, 0, NULL, ?, ?)`
-  ).run(columnId, workspaceId, new Date().toISOString(), new Date().toISOString())
+  ).run(columnId, groupId, new Date().toISOString(), new Date().toISOString())
   const cardId = randomUUID()
   db.prepare(
     `INSERT INTO cards (id, group_id, title, description, column_id, position, total_study_seconds,
