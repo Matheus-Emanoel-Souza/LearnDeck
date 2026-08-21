@@ -54,8 +54,8 @@ const api = {
     delete: (id: string): Promise<void> => ipcRenderer.invoke('groups:delete', id)
   },
   boardColumns: {
-    list: (workspaceId: string): Promise<BoardColumn[]> =>
-      ipcRenderer.invoke('boardColumns:list', workspaceId),
+    list: (groupId: string): Promise<BoardColumn[]> =>
+      ipcRenderer.invoke('boardColumns:list', groupId),
     create: (input: CreateBoardColumnInput): Promise<BoardColumn> =>
       ipcRenderer.invoke('boardColumns:create', input),
     update: (id: string, patch: UpdateBoardColumnInput): Promise<BoardColumn> =>
@@ -63,8 +63,8 @@ const api = {
     move: (id: string, direction: 'left' | 'right'): Promise<BoardColumn[]> =>
       ipcRenderer.invoke('boardColumns:move', id, direction),
     delete: (id: string): Promise<void> => ipcRenderer.invoke('boardColumns:delete', id),
-    reorder: (workspaceId: string, orderedIds: string[]): Promise<BoardColumn[]> =>
-      ipcRenderer.invoke('boardColumns:reorder', workspaceId, orderedIds),
+    reorder: (groupId: string, orderedIds: string[]): Promise<BoardColumn[]> =>
+      ipcRenderer.invoke('boardColumns:reorder', groupId, orderedIds),
     duplicate: (id: string): Promise<BoardColumn> => ipcRenderer.invoke('boardColumns:duplicate', id)
   },
   cards: {
@@ -77,7 +77,9 @@ const api = {
     search: (workspaceId: string, query: string, excludeCardId: string): Promise<CardSummary[]> =>
       ipcRenderer.invoke('cards:search', workspaceId, query, excludeCardId),
     listAllSummaries: (workspaceId: string, excludeCardId: string): Promise<CardSummary[]> =>
-      ipcRenderer.invoke('cards:listAllSummaries', workspaceId, excludeCardId)
+      ipcRenderer.invoke('cards:listAllSummaries', workspaceId, excludeCardId),
+    findByIdQuery: (workspaceId: string, idQuery: string): Promise<Card | undefined> =>
+      ipcRenderer.invoke('cards:findByIdQuery', workspaceId, idQuery)
   },
   attachments: {
     listByCard: (cardId: string): Promise<Attachment[]> =>

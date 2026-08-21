@@ -4,7 +4,7 @@ import type { BoardColumn, CreateBoardColumnInput } from '@shared/types'
 
 interface BoardColumnRow {
   id: string
-  workspace_id: string
+  group_id: string
   name: string
   position: number
   is_done: number
@@ -16,7 +16,7 @@ interface BoardColumnRow {
 function toBoardColumn(row: BoardColumnRow): BoardColumn {
   return {
     id: row.id,
-    workspaceId: row.workspace_id,
+    groupId: row.group_id,
     name: row.name,
     position: row.position,
     isDone: row.is_done === 1,
@@ -26,9 +26,23 @@ function toBoardColumn(row: BoardColumnRow): BoardColumn {
   }
 }
 
-export function listBoardColumns(db: Database.Database, workspaceId: string): BoardColumn[] {
+/** Colunas da matéria (grupo), na ordem do quadro. */
+export function listBoardColumns(db: Database.Database, groupId: string): BoardColumn[] {
   const rows = db
-    .prepare('SELECT * FROM board_columns WHERE workspace_id = ? ORDER BY position ASC')
+    .prepare('SELECT * FROM board_columns WHERE group_id = ? ORDER BY position ASC')
+    .all(groupId) as BoardColumnRow[]
+  return rows.map(toBoardColumn)
+}
+
+/** Todas as colunas de todas as matérias do workspace — usado por dashboard,
+ * calendário e o scan de notificações, que agregam o workspace inteiro. */
+export function listBoardColumnsForWorkspace(db: Database.Database, workspaceId: string): BoardColumn[] {
+  const rows = db
+    .prepare(
+      `SELECT bc.* FROM board_columns bc
+       JOIN groups g ON g.id = bc.group_id
+       WHERE g.workspace_id = ?`
+    )
     .all(workspaceId) as BoardColumnRow[]
   return rows.map(toBoardColumn)
 }
@@ -40,11 +54,11 @@ export function getBoardColumn(db: Database.Database, id: string): BoardColumn |
   return row ? toBoardColumn(row) : undefined
 }
 
-/** Coluna onde cards novos entram: a primeira (menor posição) do workspace. */
-export function getDefaultBoardColumn(db: Database.Database, workspaceId: string): BoardColumn | undefined {
+/** Coluna onde cards novos entram: a primeira (menor posição) da matéria. */
+export function getDefaultBoardColumn(db: Database.Database, groupId: string): BoardColumn | undefined {
   const row = db
-    .prepare('SELECT * FROM board_columns WHERE workspace_id = ? ORDER BY position ASC LIMIT 1')
-    .get(workspaceId) as BoardColumnRow | undefined
+    .prepare('SELECT * FROM board_columns WHERE group_id = ? ORDER BY position ASC LIMIT 1')
+    .get(groupId) as BoardColumnRow | undefined
   return row ? toBoardColumn(row) : undefined
 }
 
@@ -52,13 +66,13 @@ export function insertBoardColumn(db: Database.Database, input: CreateBoardColum
   const now = new Date().toISOString()
   const nextPosition = (
     db
-      .prepare('SELECT COALESCE(MAX(position), -1) + 1 AS next FROM board_columns WHERE workspace_id = ?')
-      .get(input.workspaceId) as { next: number }
+      .prepare('SELECT COALESCE(MAX(position), -1) + 1 AS next FROM board_columns WHERE group_id = ?')
+      .get(input.groupId) as { next: number }
   ).next
 
   const row: BoardColumnRow = {
     id: randomUUID(),
-    workspace_id: input.workspaceId,
+    group_id: input.groupId,
     name: input.name.trim(),
     position: nextPosition,
     is_done: 0,
@@ -68,8 +82,8 @@ export function insertBoardColumn(db: Database.Database, input: CreateBoardColum
   }
 
   db.prepare(
-    `INSERT INTO board_columns (id, workspace_id, name, position, is_done, color, created_at, updated_at)
-     VALUES (@id, @workspace_id, @name, @position, @is_done, @color, @created_at, @updated_at)`
+    `INSERT INTO board_columns (id, group_id, name, position, is_done, color, created_at, updated_at)
+     VALUES (@id, @group_id, @name, @position, @is_done, @color, @created_at, @updated_at)`
   ).run(row)
 
   return toBoardColumn(row)
@@ -123,10 +137,10 @@ export function countCardsInColumn(db: Database.Database, columnId: string): num
   return row.n
 }
 
-export function countBoardColumns(db: Database.Database, workspaceId: string): number {
+export function countBoardColumns(db: Database.Database, groupId: string): number {
   const row = db
-    .prepare('SELECT COUNT(*) AS n FROM board_columns WHERE workspace_id = ?')
-    .get(workspaceId) as { n: number }
+    .prepare('SELECT COUNT(*) AS n FROM board_columns WHERE group_id = ?')
+    .get(groupId) as { n: number }
   return row.n
 }
 

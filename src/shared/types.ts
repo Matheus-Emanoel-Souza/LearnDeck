@@ -6,12 +6,13 @@
 
 /**
  * Coluna do quadro Kanban (antes um enum fixo de status; agora dado por
- * workspace, editável pelo usuário — nome, posição e a flag `isDone`, que
- * marca quais colunas contam como "concluído" no dashboard).
+ * matéria/grupo, editável pelo usuário — nome, posição e a flag `isDone`, que
+ * marca quais colunas contam como "concluído" no dashboard). Cada matéria tem
+ * seu próprio conjunto de colunas, independente das outras.
  */
 export interface BoardColumn {
   id: string
-  workspaceId: string
+  groupId: string
   name: string
   position: number
   isDone: boolean
@@ -253,7 +254,7 @@ export interface UpdateSubtaskInput {
 }
 
 export interface CreateBoardColumnInput {
-  workspaceId: string
+  groupId: string
   name: string
 }
 

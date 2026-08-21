@@ -32,6 +32,7 @@ interface CardDetailPageProps {
   columns: BoardColumn[]
   onBack: () => void
   onNavigateToCard: (cardId: string) => void
+  onDelete: (cardId: string) => Promise<void>
   /** Seção pra rolar até e focar ao abrir — usada pelo menu de ações do card
    *  do Kanban (⋮), que só atalha pra uma seção que já existe aqui embaixo. */
   initialFocus?: CardDetailFocus | null
@@ -49,10 +50,12 @@ export default function CardDetailPage({
   columns,
   onBack,
   onNavigateToCard,
+  onDelete,
   initialFocus
 }: CardDetailPageProps): JSX.Element {
   const [activeTab, setActiveTab] = useState<'details' | 'notebook'>('details')
   const [card, setCard] = useState(initialCard)
+  const [deleting, setDeleting] = useState(false)
   const [description, setDescription] = useState(initialCard.description ?? '')
   const [descriptionDirty, setDescriptionDirty] = useState(false)
   const [savingDescription, setSavingDescription] = useState(false)
@@ -245,6 +248,18 @@ export default function CardDetailPage({
     }
   }
 
+  async function handleDelete(): Promise<void> {
+    if (deleting) return
+    if (!window.confirm(`Excluir o card "${card.title}"? Essa ação não pode ser desfeita.`)) return
+    setDeleting(true)
+    try {
+      await onDelete(card.id)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err))
+      setDeleting(false)
+    }
+  }
+
   return (
     <div className="card-page">
       <header className="card-page__header">
@@ -270,6 +285,25 @@ export default function CardDetailPage({
             {card.dueTime ? ` ${card.dueTime}` : ''}
           </span>
         )}
+        <button
+          type="button"
+          className="card-page__delete"
+          title="Excluir card"
+          aria-label="Excluir card"
+          disabled={deleting}
+          onClick={() => void handleDelete()}
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M4 7h16" strokeLinecap="round" />
+            <path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" strokeLinecap="round" strokeLinejoin="round" />
+            <path
+              d="M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path d="M10 11v6M14 11v6" strokeLinecap="round" />
+          </svg>
+        </button>
       </header>
 
       {error && <p className="status status--error">{error}</p>}

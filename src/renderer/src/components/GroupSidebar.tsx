@@ -6,13 +6,15 @@ interface GroupSidebarProps {
   selectedGroupId: string | null
   onSelect: (groupId: string) => void
   onCreateGroup: (name: string, parentGroupId: string | null) => Promise<void>
+  onDeleteGroup: (groupId: string) => Promise<void>
 }
 
 export default function GroupSidebar({
   tree,
   selectedGroupId,
   onSelect,
-  onCreateGroup
+  onCreateGroup,
+  onDeleteGroup
 }: GroupSidebarProps): JSX.Element {
   return (
     <aside className="sidebar">
@@ -28,6 +30,7 @@ export default function GroupSidebar({
             selectedGroupId={selectedGroupId}
             onSelect={onSelect}
             onCreateGroup={onCreateGroup}
+            onDeleteGroup={onDeleteGroup}
           />
         ))}
       </div>
@@ -42,15 +45,29 @@ function GroupTreeItem({
   depth,
   selectedGroupId,
   onSelect,
-  onCreateGroup
+  onCreateGroup,
+  onDeleteGroup
 }: {
   node: GroupNode
   depth: number
   selectedGroupId: string | null
   onSelect: (groupId: string) => void
   onCreateGroup: (name: string, parentGroupId: string | null) => Promise<void>
+  onDeleteGroup: (groupId: string) => Promise<void>
 }): JSX.Element {
   const [showChildForm, setShowChildForm] = useState(false)
+  const [busy, setBusy] = useState(false)
+
+  async function handleDelete(): Promise<void> {
+    if (busy) return
+    if (!window.confirm(`Excluir a matéria "${node.name}"? Só é possível se ela estiver vazia.`)) return
+    setBusy(true)
+    try {
+      await onDeleteGroup(node.id)
+    } finally {
+      setBusy(false)
+    }
+  }
 
   return (
     <div className="group-tree-item">
@@ -67,6 +84,14 @@ function GroupTreeItem({
           onClick={() => setShowChildForm((v) => !v)}
         >
           +
+        </button>
+        <button
+          className="group-row__delete"
+          title="Excluir matéria"
+          disabled={busy}
+          onClick={() => void handleDelete()}
+        >
+          ✕
         </button>
       </div>
 
@@ -93,6 +118,7 @@ function GroupTreeItem({
           selectedGroupId={selectedGroupId}
           onSelect={onSelect}
           onCreateGroup={onCreateGroup}
+          onDeleteGroup={onDeleteGroup}
         />
       ))}
     </div>

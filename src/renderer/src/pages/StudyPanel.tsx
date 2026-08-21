@@ -23,6 +23,7 @@ export default function StudyPanel({ workspaceId }: StudyPanelProps): JSX.Elemen
   const [loadingCards, setLoadingCards] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [viewingCard, setViewingCard] = useState<Card | null>(null)
+  const [viewingColumns, setViewingColumns] = useState<BoardColumn[]>([])
   const [viewingCardFocus, setViewingCardFocus] = useState<CardDetailFocus | null>(null)
 
   const tree = useMemo(() => buildGroupTree(groups), [groups])
@@ -33,16 +34,17 @@ export default function StudyPanel({ workspaceId }: StudyPanelProps): JSX.Elemen
     return list
   }, [workspaceId])
 
-  const reloadColumns = useCallback(async () => {
-    const list = await window.api.boardColumns.list(workspaceId)
-    setColumns(list)
-    return list
-  }, [workspaceId])
-
   useEffect(() => {
     reloadGroups().catch((err: unknown) => setError(err instanceof Error ? err.message : String(err)))
-    reloadColumns().catch((err: unknown) => setError(err instanceof Error ? err.message : String(err)))
-  }, [reloadGroups, reloadColumns])
+  }, [reloadGroups])
+
+  // Cada matéria tem seu próprio conjunto de colunas agora, então recarrega
+  // sempre que a matéria selecionada na lateral muda.
+  const reloadColumns = useCallback(async (groupId: string) => {
+    const list = await window.api.boardColumns.list(groupId)
+    setColumns(list)
+    return list
+  }, [])
 
   const reloadCards = useCallback(async (groupId: string) => {
     setLoadingCards(true)
@@ -57,18 +59,46 @@ export default function StudyPanel({ workspaceId }: StudyPanelProps): JSX.Elemen
   useEffect(() => {
     if (!selectedGroupId) {
       setCards([])
+      setColumns([])
       return
     }
     reloadCards(selectedGroupId).catch((err: unknown) =>
       setError(err instanceof Error ? err.message : String(err))
     )
-  }, [selectedGroupId, reloadCards])
+    reloadColumns(selectedGroupId).catch((err: unknown) =>
+      setError(err instanceof Error ? err.message : String(err))
+    )
+  }, [selectedGroupId, reloadCards, reloadColumns])
+
+  /** Abre um card em tela cheia com as colunas da matéria DELE — que pode não
+   * ser a matéria selecionada na lateral (ex.: card relacionado de outra
+   * matéria, aberto pelo Calendário/Notificações ou por "Relações"). */
+  async function openCard(card: Card, focus: CardDetailFocus | null): Promise<void> {
+    try {
+      const cols = await window.api.boardColumns.list(card.groupId)
+      setViewingColumns(cols)
+      setViewingCardFocus(focus)
+      setViewingCard(card)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err))
+    }
+  }
 
   async function handleCreateGroup(name: string, parentGroupId: string | null): Promise<void> {
     try {
       const created = await window.api.groups.create({ workspaceId, name, parentGroupId })
       await reloadGroups()
       setSelectedGroupId(created.id)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err))
+    }
+  }
+
+  async function handleDeleteGroup(groupId: string): Promise<void> {
+    try {
+      await window.api.groups.delete(groupId)
+      await reloadGroups()
+      if (selectedGroupId === groupId) setSelectedGroupId(null)
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
     }
@@ -118,56 +148,62 @@ export default function StudyPanel({ workspaceId }: StudyPanelProps): JSX.Elemen
   }
 
   async function handleCreateColumn(name: string): Promise<void> {
+    if (!selectedGroupId) return
     try {
-      await window.api.boardColumns.create({ workspaceId, name })
-      await reloadColumns()
+      await window.api.boardColumns.create({ groupId: selectedGroupId, name })
+      await reloadColumns(selectedGroupId)
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
     }
   }
 
   async function handleRenameColumn(id: string, name: string): Promise<void> {
+    if (!selectedGroupId) return
     try {
       await window.api.boardColumns.update(id, { name })
-      await reloadColumns()
+      await reloadColumns(selectedGroupId)
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
     }
   }
 
   async function handleReorderColumns(orderedIds: string[]): Promise<void> {
+    if (!selectedGroupId) return
     try {
-      await window.api.boardColumns.reorder(workspaceId, orderedIds)
-      await reloadColumns()
+      await window.api.boardColumns.reorder(selectedGroupId, orderedIds)
+      await reloadColumns(selectedGroupId)
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
     }
   }
 
   async function handleDuplicateColumn(id: string): Promise<void> {
+    if (!selectedGroupId) return
     try {
       await window.api.boardColumns.duplicate(id)
-      await reloadColumns()
-      if (selectedGroupId) await reloadCards(selectedGroupId)
+      await reloadColumns(selectedGroupId)
+      await reloadCards(selectedGroupId)
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
     }
   }
 
   async function handleSetColumnColor(id: string, color: string | null): Promise<void> {
+    if (!selectedGroupId) return
     try {
       await window.api.boardColumns.update(id, { color })
-      await reloadColumns()
+      await reloadColumns(selectedGroupId)
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
     }
   }
 
   async function handleDeleteColumn(id: string): Promise<void> {
+    if (!selectedGroupId) return
     if (!window.confirm('Excluir esta coluna? Só é possível se ela estiver vazia.')) return
     try {
       await window.api.boardColumns.delete(id)
-      await reloadColumns()
+      await reloadColumns(selectedGroupId)
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
     }
@@ -176,10 +212,7 @@ export default function StudyPanel({ workspaceId }: StudyPanelProps): JSX.Elemen
   async function handleNavigateToCard(cardId: string): Promise<void> {
     try {
       const target = await window.api.cards.get(cardId)
-      if (target) {
-        setViewingCardFocus(null)
-        setViewingCard(target)
-      }
+      if (target) await openCard(target, null)
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
     }
@@ -203,14 +236,12 @@ export default function StudyPanel({ workspaceId }: StudyPanelProps): JSX.Elemen
         return
       }
       // Nenhuma ou mais de uma relação: abre o card e deixa a pessoa escolher.
-      setViewingCardFocus('relations')
-      setViewingCard(card)
+      await openCard(card, 'relations')
       return
     }
 
     const focus: CardDetailFocus = action === 'apontamento' ? 'timer' : action === 'comunicacao' ? 'comment' : 'relations'
-    setViewingCardFocus(focus)
-    setViewingCard(card)
+    await openCard(card, focus)
   }
 
   function handleBackFromCard(): void {
@@ -221,6 +252,16 @@ export default function StudyPanel({ workspaceId }: StudyPanelProps): JSX.Elemen
     if (selectedGroupId) reloadCards(selectedGroupId).catch(() => undefined)
   }
 
+  async function handleDeleteCard(cardId: string): Promise<void> {
+    try {
+      await window.api.cards.delete(cardId)
+      handleBackFromCard()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err))
+      throw err
+    }
+  }
+
   const selectedGroup = groups.find((g) => g.id === selectedGroupId) ?? null
 
   if (viewingCard) {
@@ -228,9 +269,10 @@ export default function StudyPanel({ workspaceId }: StudyPanelProps): JSX.Elemen
       <CardDetailPage
         card={viewingCard}
         workspaceId={workspaceId}
-        columns={columns}
+        columns={viewingColumns}
         onBack={handleBackFromCard}
         onNavigateToCard={(cardId) => void handleNavigateToCard(cardId)}
+        onDelete={handleDeleteCard}
         initialFocus={viewingCardFocus}
       />
     )
@@ -243,6 +285,7 @@ export default function StudyPanel({ workspaceId }: StudyPanelProps): JSX.Elemen
         selectedGroupId={selectedGroupId}
         onSelect={setSelectedGroupId}
         onCreateGroup={handleCreateGroup}
+        onDeleteGroup={handleDeleteGroup}
       />
 
       <section className="card-panel">
@@ -266,10 +309,7 @@ export default function StudyPanel({ workspaceId }: StudyPanelProps): JSX.Elemen
                 columns={columns}
                 onMoveCard={handleMoveCard}
                 onCreateCard={handleCreateCard}
-                onOpenCard={(card) => {
-                  setViewingCardFocus(null)
-                  setViewingCard(card)
-                }}
+                onOpenCard={(card) => void openCard(card, null)}
                 onCardAction={(card, action) => void handleCardAction(card, action)}
                 onCreateColumn={handleCreateColumn}
                 onRenameColumn={handleRenameColumn}

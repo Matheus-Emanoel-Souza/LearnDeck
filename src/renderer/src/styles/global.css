@@ -19,15 +19,78 @@
   --accent-soft: #ede7fd;
   --ok: #22b07d;
   --ok-soft: #dff5ec;
+  --ok-strong: #18926a;
   --error: #e05a6c;
   --error-soft: #fbe4e7;
+  --error-strong: #c8455b;
   --warn: #dc9a2e;
   --warn-soft: #faf0dc;
+  --warn-strong: #a86400;
+  --chart-accent: #2a78d6;
+  --overlay: rgba(44, 36, 64, 0.35);
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
   --shadow-sm: 0 1px 2px rgba(80, 56, 160, 0.06);
   --shadow-md: 0 4px 16px rgba(80, 56, 160, 0.1);
+}
+
+/* ---- Tema escuro ---- */
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --bg: #17131f;
+    --bg-elevated: #221c30;
+    --bg-elevated-2: #2a2340;
+    --bg-elevated-3: #332b4d;
+    --border: #3d3557;
+    --text: #ece8fa;
+    --text-muted: #a99fc9;
+    --accent: #9d84f5;
+    --accent-strong: #b6a1ff;
+    --accent-soft: #2f2650;
+    --ok: #34c98f;
+    --ok-soft: #16332a;
+    --ok-strong: #4fe3ac;
+    --error: #ef7a89;
+    --error-soft: #3a1e26;
+    --error-strong: #ff8f9d;
+    --warn: #e3b256;
+    --warn-soft: #3a2f18;
+    --warn-strong: #f0c46a;
+    --chart-accent: #6ea8fe;
+    --overlay: rgba(10, 8, 16, 0.6);
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+  }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #17131f;
+  --bg-elevated: #221c30;
+  --bg-elevated-2: #2a2340;
+  --bg-elevated-3: #332b4d;
+  --border: #3d3557;
+  --text: #ece8fa;
+  --text-muted: #a99fc9;
+  --accent: #9d84f5;
+  --accent-strong: #b6a1ff;
+  --accent-soft: #2f2650;
+  --ok: #34c98f;
+  --ok-soft: #16332a;
+  --ok-strong: #4fe3ac;
+  --error: #ef7a89;
+  --error-soft: #3a1e26;
+  --error-strong: #ff8f9d;
+  --warn: #e3b256;
+  --warn-soft: #3a2f18;
+  --warn-strong: #f0c46a;
+  --chart-accent: #6ea8fe;
+  --overlay: rgba(10, 8, 16, 0.6);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
 }
 
 * {
@@ -145,6 +208,22 @@ select {
   margin-left: auto;
 }
 
+/* ---- Alternador de tema claro/escuro ---- */
+
+.theme-toggle {
+  background: none;
+  border: none;
+  font-size: 1.05rem;
+  line-height: 1;
+  padding: 0.35rem 0.5rem;
+  border-radius: var(--radius-sm, 6px);
+  cursor: pointer;
+}
+
+.theme-toggle:hover {
+  background: var(--bg-elevated-2);
+}
+
 .notification-bell__button {
   position: relative;
   background: none;
@@ -163,7 +242,7 @@ select {
   position: absolute;
   top: -2px;
   right: -2px;
-  background: #c8455b;
+  background: var(--error-strong);
   color: #fff;
   font-size: 0.62rem;
   font-weight: 700;
@@ -329,6 +408,30 @@ select {
 
 .group-row__add:hover {
   color: var(--accent-strong);
+}
+
+.group-row__delete {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0.3rem 0.5rem;
+  font-size: 0.75rem;
+  opacity: 0;
+  transition: opacity 0.12s ease, color 0.12s ease;
+}
+
+.group-row:hover .group-row__delete,
+.group-row__delete:focus-visible {
+  opacity: 1;
+}
+
+.group-row__delete:hover:not(:disabled) {
+  color: var(--error-strong);
+}
+
+.group-row__delete:disabled {
+  cursor: not-allowed;
 }
 
 /* ---- Botões e formulários ---- */
@@ -628,6 +731,12 @@ select {
   color: var(--text-muted);
   font-size: 0.78rem;
   white-space: pre-wrap;
+  /* Trava em 3 linhas pra descrição longa não estufar o card no quadro; o
+     texto completo continua disponível na tela de detalhe. */
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .kanban-card__footer {
@@ -678,6 +787,35 @@ select {
 .card-page__meta {
   color: var(--text-muted);
   font-size: 0.78rem;
+}
+
+.card-page__delete {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  padding: 0;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--error-strong);
+  cursor: pointer;
+}
+
+.card-page__delete svg {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+.card-page__delete:hover:not(:disabled) {
+  background: var(--error-soft);
+  border-color: var(--error-strong);
+}
+
+.card-page__delete:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .card-page__body {
@@ -1193,14 +1331,14 @@ select {
 
 .line-chart__line {
   fill: none;
-  stroke: #2a78d6;
+  stroke: var(--chart-accent);
   stroke-width: 2;
   stroke-linejoin: round;
   stroke-linecap: round;
 }
 
 .line-chart__dot {
-  fill: #2a78d6;
+  fill: var(--chart-accent);
   stroke: var(--bg-elevated);
   stroke-width: 2;
 }
@@ -1225,7 +1363,7 @@ select {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(44, 36, 64, 0.35);
+  background: var(--overlay);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1549,12 +1687,12 @@ select {
 
 .update-status--ok {
   background: var(--ok-soft);
-  color: #18926a;
+  color: var(--ok-strong);
 }
 
 .update-status--error {
   background: var(--error-soft);
-  color: #c8455b;
+  color: var(--error-strong);
 }
 
 .update-status--info {
@@ -1653,7 +1791,7 @@ select {
 }
 
 .context-menu__item--danger {
-  color: #c8455b;
+  color: var(--error-strong);
 }
 
 .context-menu__panel-form {
@@ -1804,8 +1942,8 @@ select {
 }
 
 .status-badge--done {
-  background: #dff5ec;
-  color: #18926a;
+  background: var(--ok-soft);
+  color: var(--ok-strong);
 }
 
 /* ---- Badge de prazo (card/subtarefa/calendário) ---- */
@@ -1827,18 +1965,18 @@ select {
 }
 
 .due-badge--due-soon {
-  background: #fff2d6;
-  color: #a86400;
+  background: var(--warn-soft);
+  color: var(--warn-strong);
 }
 
 .due-badge--overdue {
-  background: #fbe4e7;
-  color: #c8455b;
+  background: var(--error-soft);
+  color: var(--error-strong);
 }
 
 .due-badge--done {
-  background: #dff5ec;
-  color: #18926a;
+  background: var(--ok-soft);
+  color: var(--ok-strong);
 }
 
 /* ---- Calendário ---- */
@@ -1927,21 +2065,21 @@ select {
 }
 
 .calendar-item--overdue {
-  background: #fbe4e7;
-  color: #c8455b;
-  border-left-color: #c8455b;
+  background: var(--error-soft);
+  color: var(--error-strong);
+  border-left-color: var(--error-strong);
 }
 
 .calendar-item--due-soon {
-  background: #fff2d6;
-  color: #a86400;
-  border-left-color: #a86400;
+  background: var(--warn-soft);
+  color: var(--warn-strong);
+  border-left-color: var(--warn-strong);
 }
 
 .calendar-item--done {
-  background: #dff5ec;
-  color: #18926a;
-  border-left-color: #18926a;
+  background: var(--ok-soft);
+  color: var(--ok-strong);
+  border-left-color: var(--ok-strong);
 }
 
 .calendar-item--ok {
@@ -1951,7 +2089,7 @@ select {
 .calendar-modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.4);
+  background: var(--overlay);
   display: flex;
   align-items: center;
   justify-content: center;

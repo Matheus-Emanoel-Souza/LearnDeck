@@ -1,6 +1,6 @@
 import type Database from 'better-sqlite3'
 import type { CalendarItem } from '@shared/types'
-import { listBoardColumns } from '../repositories/boardColumnRepository'
+import { listBoardColumnsForWorkspace } from '../repositories/boardColumnRepository'
 import { listCardsForWorkspace, listCardsWithDueDate } from '../repositories/cardRepository'
 import { listSubtasksWithDueDate } from '../repositories/subtaskRepository'
 
@@ -8,7 +8,7 @@ import { listSubtasksWithDueDate } from '../repositories/subtaskRepository'
  * grupo/quadro) — cada um já traz o essencial pro clique abrir o ticket. */
 export function getCalendarItems(db: Database.Database, workspaceId: string): CalendarItem[] {
   const doneColumnIds = new Set(
-    listBoardColumns(db, workspaceId)
+    listBoardColumnsForWorkspace(db, workspaceId)
       .filter((c) => c.isDone)
       .map((c) => c.id)
   )

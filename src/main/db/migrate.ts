@@ -31,7 +31,19 @@ export function runMigrations(db: Database.Database): void {
       )
     })
 
-    apply()
+    // Migrations que reconstroem uma tabela (padrão "cria tabela nova, copia
+    // dados, dropa a antiga, renomeia") esbarram em foreign keys de dois
+    // jeitos com `foreign_keys = ON`: um DROP TABLE que ainda é referenciado
+    // por ON DELETE RESTRICT é bloqueado, e um DROP TABLE referenciado por ON
+    // DELETE CASCADE apaga em cascata as linhas dependentes (perda de dados).
+    // Só pode ser alternado fora de uma transação — por isso liga/desliga em
+    // volta da transaction, nunca dentro dela.
+    db.pragma('foreign_keys = OFF')
+    try {
+      apply()
+    } finally {
+      db.pragma('foreign_keys = ON')
+    }
     console.log(`[db] migration aplicada: ${migration.name}`)
   }
 }

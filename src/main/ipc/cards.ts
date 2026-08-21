@@ -7,7 +7,7 @@ import {
   listAllCardSummariesInWorkspace,
   searchCardsInWorkspace
 } from '../repositories/cardRepository'
-import { createCard, deleteCard, listCards, updateCard } from '../services/cardService'
+import { createCard, deleteCard, findCardByIdQuery, listCards, updateCard } from '../services/cardService'
 import { scanAndBroadcast } from '../notificationScanner'
 
 export function registerCardsIpc(db: Database.Database): void {
@@ -41,5 +41,11 @@ export function registerCardsIpc(db: Database.Database): void {
     'cards:listAllSummaries',
     (_event, workspaceId: string, excludeCardId: string): CardSummary[] =>
       listAllCardSummariesInWorkspace(db, workspaceId, excludeCardId)
+  )
+
+  ipcMain.handle(
+    'cards:findByIdQuery',
+    (_event, workspaceId: string, idQuery: string): Card | undefined =>
+      findCardByIdQuery(db, workspaceId, idQuery)
   )
 }
