@@ -22,6 +22,9 @@ notificações, e veja tudo num dashboard com números e gráficos.
 > ✅ MVP completo (Fases 0 a 9) + Fase 10 (colunas dinâmicas, anexos, prazos, subtarefas,
 > notificações). Ver histórico em [`docs/roadmap.md`](docs/roadmap.md) e o que já existe vs. o
 > que falta em [`docs/features.md`](docs/features.md).
+>
+> 🌐 Nesta branch (`webapp`) existe também uma versão que roda direto no navegador, sem instalar
+> nada (PWA) — `npm run dev:webapp` / `npm run build:webapp`. Ver [`docs/WEBAPP.md`](docs/WEBAPP.md).
 
 ---
 
