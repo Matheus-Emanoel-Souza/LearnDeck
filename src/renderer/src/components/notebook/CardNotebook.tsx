@@ -6,6 +6,8 @@ import '@mdxeditor/editor/style.css'
 import type { Notebook, NotebookVersion } from '@shared/types'
 import { buildNotebookPlugins } from './notebookEditorConfig'
 import { collapseHashtagsForStorage, expandHashtagsForEditor } from './plugins/hashtagTransform'
+import { isWebBuild } from '../../lib/platform'
+import { watchLdattachImages } from '../../lib/attachmentImageResolver'
 import TemplatePicker from './TemplatePicker'
 import SaveIndicator from './SaveIndicator'
 import type { SaveState } from './SaveIndicator'
@@ -113,6 +115,14 @@ export default function CardNotebook({ cardId, workspaceId, onNavigateToCard }: 
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cardId])
+
+  // Build web: imagens do caderno são salvas como `ldattach://...` (mesmo
+  // texto do build desktop), mas o navegador não resolve esse esquema
+  // sozinho — ver attachmentImageResolver.ts.
+  useEffect(() => {
+    if (!isWebBuild() || !contentWrapperRef.current) return
+    return watchLdattachImages(contentWrapperRef.current)
+  }, [cardId, editorMarkdown])
 
   function handleChange(markdown: string, initialNormalize: boolean): void {
     if (initialNormalize) return
