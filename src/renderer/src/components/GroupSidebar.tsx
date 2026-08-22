@@ -7,36 +7,69 @@ interface GroupSidebarProps {
   onSelect: (groupId: string) => void
   onCreateGroup: (name: string, parentGroupId: string | null) => Promise<void>
   onDeleteGroup: (groupId: string) => Promise<void>
+  collapsed: boolean
+  onToggleCollapse: () => void
 }
 
+/**
+ * Barra lateral de matérias/projetos. `collapsed` tem dois significados
+ * conforme a largura da tela (ver media query em global.css):
+ * - Desktop: encolhe pra uma faixa fina só com o botão de alternar.
+ * - Mobile (<=720px): vira um "drawer" que fica fora da tela até ser aberto.
+ * O botão de alternar some junto quando o drawer fecha no mobile, então
+ * quem reabre é o `.sidebar-mobile-toggle` renderizado pelo StudyPanel.
+ */
 export default function GroupSidebar({
   tree,
   selectedGroupId,
   onSelect,
   onCreateGroup,
-  onDeleteGroup
+  onDeleteGroup,
+  collapsed,
+  onToggleCollapse
 }: GroupSidebarProps): JSX.Element {
   return (
-    <aside className="sidebar">
-      <h2 className="sidebar__title">Matérias &amp; projetos</h2>
+    <>
+      <aside className={`sidebar ${collapsed ? 'sidebar--collapsed' : ''}`}>
+        <div className="sidebar__topbar">
+          {!collapsed && <h2 className="sidebar__title">Matérias &amp; projetos</h2>}
+          <button
+            type="button"
+            className="sidebar__collapse-btn"
+            onClick={onToggleCollapse}
+            title={collapsed ? 'Expandir barra lateral' : 'Minimizar barra lateral'}
+            aria-label={collapsed ? 'Expandir barra lateral' : 'Minimizar barra lateral'}
+            aria-expanded={!collapsed}
+          >
+            {collapsed ? '»' : '«'}
+          </button>
+        </div>
 
-      <div className="group-list">
-        {tree.length === 0 && <p className="empty-hint">Nenhum grupo ainda. Crie o primeiro abaixo.</p>}
-        {tree.map((node) => (
-          <GroupTreeItem
-            key={node.id}
-            node={node}
-            depth={0}
-            selectedGroupId={selectedGroupId}
-            onSelect={onSelect}
-            onCreateGroup={onCreateGroup}
-            onDeleteGroup={onDeleteGroup}
-          />
-        ))}
-      </div>
+        {!collapsed && (
+          <>
+            <div className="group-list">
+              {tree.length === 0 && <p className="empty-hint">Nenhum grupo ainda. Crie o primeiro abaixo.</p>}
+              {tree.map((node) => (
+                <GroupTreeItem
+                  key={node.id}
+                  node={node}
+                  depth={0}
+                  selectedGroupId={selectedGroupId}
+                  onSelect={onSelect}
+                  onCreateGroup={onCreateGroup}
+                  onDeleteGroup={onDeleteGroup}
+                />
+              ))}
+            </div>
 
-      <NewGroupForm parentGroupId={null} label="+ Novo grupo raiz" onCreateGroup={onCreateGroup} />
-    </aside>
+            <NewGroupForm parentGroupId={null} label="+ Novo grupo raiz" onCreateGroup={onCreateGroup} />
+          </>
+        )}
+      </aside>
+
+      {/* No mobile funciona como fundo escurecido do drawer; no desktop fica invisível (ver CSS). */}
+      {!collapsed && <div className="sidebar-backdrop" onClick={onToggleCollapse} />}
+    </>
   )
 }
 
