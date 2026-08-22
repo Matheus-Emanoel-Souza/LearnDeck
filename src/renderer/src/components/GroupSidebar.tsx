@@ -9,6 +9,9 @@ interface GroupSidebarProps {
   onDeleteGroup: (groupId: string) => Promise<void>
   collapsed: boolean
   onToggleCollapse: () => void
+  /** Em telas estreitas a lista deixa de ser barra lateral e vira a primeira
+   *  tela da aba Quadro — sem botão de minimizar, sem drawer, sem backdrop. */
+  asScreen?: boolean
 }
 
 /**
@@ -26,8 +29,55 @@ export default function GroupSidebar({
   onCreateGroup,
   onDeleteGroup,
   collapsed,
-  onToggleCollapse
+  onToggleCollapse,
+  asScreen
 }: GroupSidebarProps): JSX.Element {
+  if (asScreen) {
+    return (
+      <section className="group-screen">
+        <header className="group-screen__header">
+          <h2>Matérias &amp; projetos</h2>
+        </header>
+
+        {tree.length === 0 ? (
+          <div className="group-screen__empty">
+            <p className="group-screen__empty-title">Nenhum projeto ainda</p>
+            <p className="group-screen__empty-text">
+              Crie seu primeiro projeto para começar a organizar os estudos.
+            </p>
+            <NewGroupForm
+              parentGroupId={null}
+              label="+ Criar novo projeto"
+              onCreateGroup={onCreateGroup}
+            />
+          </div>
+        ) : (
+          <>
+            <div className="group-list group-list--screen">
+              {tree.map((node) => (
+                <GroupTreeItem
+                  key={node.id}
+                  node={node}
+                  depth={0}
+                  selectedGroupId={selectedGroupId}
+                  onSelect={onSelect}
+                  onCreateGroup={onCreateGroup}
+                  onDeleteGroup={onDeleteGroup}
+                />
+              ))}
+            </div>
+
+            <NewGroupForm
+              parentGroupId={null}
+              label="+ Novo projeto"
+              onCreateGroup={onCreateGroup}
+            />
+          </>
+        )}
+      </section>
+    )
+  }
+
   return (
     <>
       <aside className={`sidebar ${collapsed ? 'sidebar--collapsed' : ''}`}>
