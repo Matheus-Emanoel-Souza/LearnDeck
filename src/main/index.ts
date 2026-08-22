@@ -54,8 +54,11 @@ function createMainWindow(): void {
   const win = new BrowserWindow({
     width: 1280,
     height: 800,
-    minWidth: 960,
-    minHeight: 640,
+    // Antes 960x640 — travava a janela larga demais pra ver o layout
+    // responsivo (breakpoint mobile em global.css é 720px). 360 cobre a
+    // largura de um celular comum.
+    minWidth: 360,
+    minHeight: 560,
     show: false,
     autoHideMenuBar: true,
     webPreferences: {
