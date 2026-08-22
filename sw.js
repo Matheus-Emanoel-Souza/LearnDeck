@@ -12,7 +12,7 @@
 //
 // Os dados do app (SQLite + anexos) NÃO passam por aqui — vivem no IndexedDB,
 // ver src/web/db/.
-const CACHE = 'learndeck-web-v2'
+const CACHE = 'learndeck-web-v3'
 
 self.addEventListener('install', () => {
   self.skipWaiting()
@@ -33,7 +33,11 @@ self.addEventListener('fetch', (event) => {
 
   if (request.mode === 'navigate') {
     event.respondWith(
-      fetch(request)
+      // `cache: 'reload'` fura o cache HTTP do navegador. Sem isso, o
+      // `max-age=600` que o GitHub Pages manda no index.html devolveria o HTML
+      // da versão anterior por até 10 minutos depois de um deploy — e ele
+      // aponta pra bundles que já não existem (404 → tela branca).
+      fetch(new Request(request, { cache: 'reload' }))
         .then((response) => {
           if (response.ok) {
             const copy = response.clone()
