@@ -8,6 +8,14 @@
 ![Status](https://img.shields.io/badge/status-MVP%20completo-brightgreen)
 ![Licença](https://img.shields.io/badge/licença-MIT-orange)
 
+> ### 🌐 Testar agora: **<https://matheus-emanoel-souza.github.io/LearnDeck/>**
+>
+> Roda direto no navegador, no celular ou no PC, sem instalar nada — e dá para adicionar à tela
+> inicial e usar como app (PWA).
+>
+> Os dados ficam salvos no próprio dispositivo (SQLite via IndexedDB), então **não há
+> sincronização** entre celular, PC e a versão desktop: cada um tem seus próprios dados.
+
 Aplicativo desktop **local e offline** para gerenciar estudos através de cards, inspirado no
 funcionamento de sistemas de tickets (estilo TiFlux), mas voltado para acompanhamento de
 aprendizado, tempo de estudo e produtividade.
