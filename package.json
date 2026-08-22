@@ -1,6 +1,6 @@
 {
   "name": "learndeck",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Aplicativo desktop local para gerenciamento de estudos com cards, cronômetro, Pomodoro e histórico.",
   "main": "./out/main/index.js",
   "author": "Matheus Emanoel",
