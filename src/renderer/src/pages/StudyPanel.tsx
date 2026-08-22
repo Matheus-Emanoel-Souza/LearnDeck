@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { MOBILE_BREAKPOINT_PX, loadSidebarCollapsed, saveSidebarCollapsed } from '../lib/sidebarPrefs'
 import type { BoardColumn, Card, Group } from '@shared/types'
 import { buildGroupTree } from '../lib/groupTree'
 import { reorderCards } from '../lib/kanban'
@@ -25,8 +26,17 @@ export default function StudyPanel({ workspaceId }: StudyPanelProps): JSX.Elemen
   const [viewingCard, setViewingCard] = useState<Card | null>(null)
   const [viewingColumns, setViewingColumns] = useState<BoardColumn[]>([])
   const [viewingCardFocus, setViewingCardFocus] = useState<CardDetailFocus | null>(null)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(loadSidebarCollapsed)
 
   const tree = useMemo(() => buildGroupTree(groups), [groups])
+
+  useEffect(() => {
+    saveSidebarCollapsed(sidebarCollapsed)
+  }, [sidebarCollapsed])
+
+  function toggleSidebar(): void {
+    setSidebarCollapsed((v) => !v)
+  }
 
   const reloadGroups = useCallback(async () => {
     const list = await window.api.groups.list(workspaceId)
@@ -280,12 +290,31 @@ export default function StudyPanel({ workspaceId }: StudyPanelProps): JSX.Elemen
 
   return (
     <div className="study-panel">
+      {/* Só aparece no mobile (CSS) e só quando o drawer está fechado — aberto,
+          o próprio botão "«" no topo da sidebar já fecha. */}
+      {sidebarCollapsed && (
+        <button
+          type="button"
+          className="sidebar-mobile-toggle"
+          onClick={toggleSidebar}
+          aria-label="Abrir barra lateral"
+        >
+          ☰
+        </button>
+      )}
+
       <GroupSidebar
         tree={tree}
         selectedGroupId={selectedGroupId}
-        onSelect={setSelectedGroupId}
+        onSelect={(groupId) => {
+          setSelectedGroupId(groupId)
+          // No mobile o drawer cobre o quadro; fecha sozinho ao escolher uma matéria.
+          if (window.innerWidth <= MOBILE_BREAKPOINT_PX) setSidebarCollapsed(true)
+        }}
         onCreateGroup={handleCreateGroup}
         onDeleteGroup={handleDeleteGroup}
+        collapsed={sidebarCollapsed}
+        onToggleCollapse={toggleSidebar}
       />
 
       <section className="card-panel">
