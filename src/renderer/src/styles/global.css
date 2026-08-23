@@ -6,17 +6,20 @@
     -apple-system,
     sans-serif;
 
-  /* Paleta lavanda/roxo claro — visual de app de estudos, moderno e limpo. */
-  --bg: #f4f1fb;
+  /* Paleta azul com detalhes dourados — azul é a identidade principal,
+     dourado só entra como destaque pontual (ver --gold*). */
+  --bg: #eef3fb;
   --bg-elevated: #ffffff;
-  --bg-elevated-2: #ede8fb;
-  --bg-elevated-3: #e2daf7;
-  --border: #ddd3f5;
-  --text: #2c2440;
-  --text-muted: #786e99;
-  --accent: #7c5cf2;
-  --accent-strong: #6a47e0;
-  --accent-soft: #ede7fd;
+  --bg-elevated-2: #e2ecfa;
+  --bg-elevated-3: #d3e2f6;
+  --border: #c9d9f0;
+  --text: #16233a;
+  --text-muted: #56698c;
+  --accent: #3b82f6;
+  --accent-strong: #1e3a5f;
+  --accent-soft: #dce9fd;
+  --gold: #d4a72c;
+  --gold-soft: #faf1d8;
   --ok: #22b07d;
   --ok-soft: #dff5ec;
   --ok-strong: #18926a;
@@ -26,8 +29,8 @@
   --warn: #dc9a2e;
   --warn-soft: #faf0dc;
   --warn-strong: #a86400;
-  --chart-accent: #2a78d6;
-  --overlay: rgba(44, 36, 64, 0.35);
+  --chart-accent: #3b82f6;
+  --overlay: rgba(22, 35, 58, 0.35);
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
@@ -40,16 +43,18 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
     color-scheme: dark;
-    --bg: #17131f;
-    --bg-elevated: #221c30;
-    --bg-elevated-2: #2a2340;
-    --bg-elevated-3: #332b4d;
-    --border: #3d3557;
-    --text: #ece8fa;
-    --text-muted: #a99fc9;
-    --accent: #9d84f5;
-    --accent-strong: #b6a1ff;
-    --accent-soft: #2f2650;
+    --bg: #0f172a;
+    --bg-elevated: #1e293b;
+    --bg-elevated-2: #243247;
+    --bg-elevated-3: #2c3b52;
+    --border: #32445c;
+    --text: #e2e8f0;
+    --text-muted: #94a3b8;
+    --accent: #60a5fa;
+    --accent-strong: #3b82f6;
+    --accent-soft: #1e3a5f;
+    --gold: #f2c94c;
+    --gold-soft: rgba(242, 201, 76, 0.14);
     --ok: #34c98f;
     --ok-soft: #16332a;
     --ok-strong: #4fe3ac;
@@ -59,8 +64,8 @@
     --warn: #e3b256;
     --warn-soft: #3a2f18;
     --warn-strong: #f0c46a;
-    --chart-accent: #6ea8fe;
-    --overlay: rgba(10, 8, 16, 0.6);
+    --chart-accent: #60a5fa;
+    --overlay: rgba(5, 9, 18, 0.6);
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
     --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
   }
@@ -68,16 +73,18 @@
 
 :root[data-theme='dark'] {
   color-scheme: dark;
-  --bg: #17131f;
-  --bg-elevated: #221c30;
-  --bg-elevated-2: #2a2340;
-  --bg-elevated-3: #332b4d;
-  --border: #3d3557;
-  --text: #ece8fa;
-  --text-muted: #a99fc9;
-  --accent: #9d84f5;
-  --accent-strong: #b6a1ff;
-  --accent-soft: #2f2650;
+  --bg: #0f172a;
+  --bg-elevated: #1e293b;
+  --bg-elevated-2: #243247;
+  --bg-elevated-3: #2c3b52;
+  --border: #32445c;
+  --text: #e2e8f0;
+  --text-muted: #94a3b8;
+  --accent: #60a5fa;
+  --accent-strong: #3b82f6;
+  --accent-soft: #1e3a5f;
+  --gold: #f2c94c;
+  --gold-soft: rgba(242, 201, 76, 0.14);
   --ok: #34c98f;
   --ok-soft: #16332a;
   --ok-strong: #4fe3ac;
@@ -87,8 +94,8 @@
   --warn: #e3b256;
   --warn-soft: #3a2f18;
   --warn-strong: #f0c46a;
-  --chart-accent: #6ea8fe;
-  --overlay: rgba(10, 8, 16, 0.6);
+  --chart-accent: #60a5fa;
+  --overlay: rgba(5, 9, 18, 0.6);
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
 }
@@ -199,6 +206,7 @@ select {
 .app-nav__tab--active {
   background: var(--accent-soft);
   color: var(--accent-strong);
+  box-shadow: inset 0 -2px 0 var(--gold);
 }
 
 /* ---- Sino de notificações ---- */
@@ -512,6 +520,15 @@ select {
     scroll-snap-type: x proximity;
   }
 
+  .kanban-board__toolbar {
+    justify-content: stretch;
+  }
+
+  .kanban-board__toolbar .new-card-form,
+  .kanban-board__toolbar .new-card-form__trigger {
+    width: 100%;
+  }
+
   .calendar-grid__day {
     min-height: 60px;
     padding: 0.2rem;
@@ -721,7 +738,8 @@ select {
 }
 
 .new-card-form input,
-.new-card-form textarea {
+.new-card-form textarea,
+.new-card-form select {
   background: var(--bg-elevated);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -736,6 +754,24 @@ select {
 }
 
 /* ---- Kanban ---- */
+
+.kanban-board-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-height: 0;
+}
+
+.kanban-board__toolbar {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.kanban-board__toolbar .new-card-form {
+  align-items: flex-end;
+  width: min(320px, 100%);
+}
 
 .kanban-board {
   flex: 1;
@@ -844,11 +880,6 @@ select {
   padding: 0 0.7rem 0.7rem;
   overflow-y: auto;
   min-height: 40px;
-}
-
-.kanban-column__footer {
-  padding: 0.6rem 0.7rem;
-  border-top: 1px solid var(--border);
 }
 
 .kanban-card {

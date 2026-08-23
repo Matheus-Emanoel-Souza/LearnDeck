@@ -118,11 +118,12 @@ export default function StudyPanel({ workspaceId }: StudyPanelProps): JSX.Elemen
     title: string,
     description: string | null,
     dueDate: string | null,
-    dueTime: string | null
+    dueTime: string | null,
+    columnId: string
   ): Promise<void> {
     if (!selectedGroupId) return
     try {
-      await window.api.cards.create({ groupId: selectedGroupId, title, description, dueDate, dueTime })
+      await window.api.cards.create({ groupId: selectedGroupId, title, description, dueDate, dueTime, columnId })
       await reloadCards(selectedGroupId)
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
