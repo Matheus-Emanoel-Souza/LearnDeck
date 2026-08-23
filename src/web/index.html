@@ -4,6 +4,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0f0f0f" />
+    <!-- iOS antigo ignora o manifest: sem estas tags o atalho abre com a
+         barra do Safari em vez de tela cheia. Ver docs/PWA-INSTALAR.md. -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <meta name="apple-mobile-web-app-title" content="LearnDeck" />
     <link rel="manifest" href="./manifest.webmanifest" />
     <link rel="icon" href="./icon.png" />
     <link rel="apple-touch-icon" href="./icon.png" />

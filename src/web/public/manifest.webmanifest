@@ -7,5 +7,5 @@
   "background_color": "#0f0f0f",
   "theme_color": "#0f0f0f",
   "orientation": "any",
-  "icons": [{ "src": "icon.png", "sizes": "any", "type": "image/png", "purpose": "any" }]
+  "icons": [{ "src": "icon.png", "sizes": "1024x1024", "type": "image/png", "purpose": "any" }]
 }
