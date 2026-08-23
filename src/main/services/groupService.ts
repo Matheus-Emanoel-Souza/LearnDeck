@@ -9,15 +9,10 @@ import {
 } from '../repositories/groupRepository'
 import { insertBoardColumn, updateBoardColumnRow } from '../repositories/boardColumnRepository'
 
-/** Mesmo conjunto de colunas que toda matéria nova começa com (era o seed
- * fixo por workspace da migration 002; agora cada matéria traz o seu). */
+/** Toda matéria nova nasce só com essa coluna — o usuário cria as demais
+ * conforme precisar (era um conjunto fixo maior; ver histórico do PR de UI/UX). */
 const DEFAULT_COLUMNS: Array<{ name: string; isDone: boolean }> = [
-  { name: 'Backlog', isDone: false },
-  { name: 'A estudar', isDone: false },
-  { name: 'Estudando', isDone: false },
-  { name: 'Pausado', isDone: false },
-  { name: 'Revisar', isDone: false },
-  { name: 'Concluído', isDone: true }
+  { name: 'Coluna principal', isDone: false }
 ]
 
 /** Cria a matéria/grupo e já semeia suas colunas padrão do quadro — sem isso

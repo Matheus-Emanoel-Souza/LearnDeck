@@ -5,13 +5,14 @@ import StudyPanel from './pages/StudyPanel'
 import Dashboard from './pages/Dashboard'
 import CalendarPage from './pages/CalendarPage'
 import NotificationsPage from './pages/NotificationsPage'
+import UpdatesPage from './pages/UpdatesPage'
 import Settings from './pages/Settings'
 import CardDetailPage from './pages/CardDetailPage'
 import NotificationBell from './components/NotificationBell'
 import ThemeToggle from './components/ThemeToggle'
 import { useIsNarrow } from './lib/useIsNarrow'
 
-type Tab = 'board' | 'dashboard' | 'calendar' | 'notifications' | 'settings'
+type Tab = 'board' | 'dashboard' | 'calendar' | 'notifications' | 'updates' | 'settings'
 
 /** Abas da barra inferior no mobile. Notificações fica de fora (o sino no
  *  header já abre) e Configurações vira o botão ⚙ ao lado do tema — as duas
@@ -24,6 +25,7 @@ const BOTTOM_TABS = [
 
 const SECONDARY_TITLES: Record<string, string> = {
   notifications: 'Notificações',
+  updates: 'Atualizações',
   settings: 'Configurações'
 }
 
@@ -36,7 +38,7 @@ export default function App(): JSX.Element {
   // Aba pra onde o "voltar" das telas secundárias (notificações/configurações)
   // retorna — sempre a última aba principal visitada.
   const [returnTab, setReturnTab] = useState<Tab>('board')
-  const isSecondaryTab = tab === 'notifications' || tab === 'settings'
+  const isSecondaryTab = tab === 'notifications' || tab === 'updates' || tab === 'settings'
 
   const openSecondary = useCallback(
     (target: Tab) => {
@@ -161,11 +163,7 @@ export default function App(): JSX.Element {
             </button>
           </nav>
         )}
-        <NotificationBell
-          workspaceId={info.workspace.id}
-          onOpenCard={openCardGlobally}
-          onViewAll={() => openSecondary('notifications')}
-        />
+        <NotificationBell workspaceId={info.workspace.id} onOpenUpdates={() => openSecondary('updates')} />
         {isNarrow && (
           <button
             type="button"
@@ -193,6 +191,11 @@ export default function App(): JSX.Element {
       {tab === 'notifications' && (
         <div className="card-panel">
           <NotificationsPage workspaceId={info.workspace.id} onOpenCard={openCardGlobally} />
+        </div>
+      )}
+      {tab === 'updates' && (
+        <div className="card-panel">
+          <UpdatesPage />
         </div>
       )}
       {tab === 'settings' && (
