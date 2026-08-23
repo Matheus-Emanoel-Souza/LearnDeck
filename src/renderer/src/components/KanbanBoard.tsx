@@ -16,7 +16,8 @@ interface KanbanBoardProps {
     title: string,
     description: string | null,
     dueDate: string | null,
-    dueTime: string | null
+    dueTime: string | null,
+    columnId: string
   ) => Promise<void>
   onOpenCard: (card: Card) => void
   onCardAction: (card: Card, action: CardActionId) => void
@@ -32,8 +33,8 @@ interface KanbanBoardProps {
  * Quadro Kanban: colunas dinâmicas (nome/cor/ordem editáveis pelo usuário —
  * arraste o cabeçalho pra reordenar, botão direito pra duplicar/colorir/
  * excluir), cards arrastáveis entre e dentro delas (drag-and-drop nativo,
- * sem dependência extra). Novos cards sempre entram na primeira coluna
- * (regra do CardService).
+ * sem dependência extra). Criação de card é uma ação global no topo do
+ * quadro ("+ Novo ticket"), com a coluna de destino selecionável.
  */
 export default function KanbanBoard({
   cards,
@@ -125,7 +126,11 @@ export default function KanbanBoard({
   }
 
   return (
-    <>
+    <div className="kanban-board-wrap">
+      <div className="kanban-board__toolbar">
+        <NewCardForm columns={columns} onCreate={onCreateCard} />
+      </div>
+
       {isNarrow && columns.length > 0 && (
         <div className="kanban-chips" ref={chipsRef} role="tablist" aria-label="Colunas do quadro">
           {columns.map((column, index) => (
@@ -168,9 +173,6 @@ export default function KanbanBoard({
               e.preventDefault()
               setContextMenu({ columnId, x: e.clientX, y: e.clientY })
             }}
-            headerExtra={
-              columns[0]?.id === column.id ? <NewCardForm onCreate={onCreateCard} /> : undefined
-            }
           />
         ))}
 
@@ -224,6 +226,6 @@ export default function KanbanBoard({
           />
         )}
       </div>
-    </>
+    </div>
   )
 }

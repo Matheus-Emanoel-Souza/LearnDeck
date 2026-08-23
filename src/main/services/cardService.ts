@@ -24,7 +24,7 @@ export function createCard(db: Database.Database, input: CreateCardInput): Card 
     const defaultColumn = getDefaultBoardColumn(db, input.groupId)
     if (!defaultColumn) throw new Error('Matéria sem colunas configuradas')
 
-    const card = insertCardRow(db, input, defaultColumn.id)
+    const card = insertCardRow(db, input, input.columnId ?? defaultColumn.id)
     insertStatusHistory(db, card.id, null, card.columnId)
     return card
   })
