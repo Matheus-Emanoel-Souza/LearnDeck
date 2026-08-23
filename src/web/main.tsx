@@ -5,6 +5,7 @@ import { applyTheme, getInitialTheme } from '@renderer/lib/theme'
 import '@renderer/styles/global.css'
 import { installWebApi } from './api'
 import { flushPendingWrite } from './db/connection'
+import InstallPrompt from './InstallPrompt'
 
 // Marca o build web ANTES de qualquer componente montar — ver
 // src/renderer/src/lib/platform.ts (usado pelo caderno pra resolver imagens).
@@ -21,6 +22,8 @@ installWebApi()
     ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
       <React.StrictMode>
         <App />
+        {/* Só no build web: oferece instalar como app. Ver docs/PWA-INSTALAR.md. */}
+        <InstallPrompt />
       </React.StrictMode>
     )
   })
