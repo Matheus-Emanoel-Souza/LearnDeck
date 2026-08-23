@@ -5,12 +5,13 @@ import StudyPanel from './pages/StudyPanel'
 import Dashboard from './pages/Dashboard'
 import CalendarPage from './pages/CalendarPage'
 import NotificationsPage from './pages/NotificationsPage'
+import UpdatesPage from './pages/UpdatesPage'
 import Settings from './pages/Settings'
 import CardDetailPage from './pages/CardDetailPage'
 import NotificationBell from './components/NotificationBell'
 import ThemeToggle from './components/ThemeToggle'
 
-type Tab = 'board' | 'dashboard' | 'calendar' | 'notifications' | 'settings'
+type Tab = 'board' | 'dashboard' | 'calendar' | 'notifications' | 'updates' | 'settings'
 
 export default function App(): JSX.Element {
   const [info, setInfo] = useState<AppInfo | null>(null)
@@ -120,11 +121,7 @@ export default function App(): JSX.Element {
             Configurações
           </button>
         </nav>
-        <NotificationBell
-          workspaceId={info.workspace.id}
-          onOpenCard={openCardGlobally}
-          onViewAll={() => setTab('notifications')}
-        />
+        <NotificationBell workspaceId={info.workspace.id} onOpenUpdates={() => setTab('updates')} />
         <ThemeToggle />
       </header>
       {tab === 'board' && <StudyPanel workspaceId={info.workspace.id} />}
@@ -141,6 +138,11 @@ export default function App(): JSX.Element {
       {tab === 'notifications' && (
         <div className="card-panel">
           <NotificationsPage workspaceId={info.workspace.id} onOpenCard={openCardGlobally} />
+        </div>
+      )}
+      {tab === 'updates' && (
+        <div className="card-panel">
+          <UpdatesPage />
         </div>
       )}
       {tab === 'settings' && (

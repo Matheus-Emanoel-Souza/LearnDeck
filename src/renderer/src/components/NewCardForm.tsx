@@ -1,21 +1,39 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import type { BoardColumn } from '@shared/types'
 
 interface NewCardFormProps {
-  onCreate: (title: string, description: string | null, dueDate: string | null, dueTime: string | null) => Promise<void>
+  columns: BoardColumn[]
+  onCreate: (
+    title: string,
+    description: string | null,
+    dueDate: string | null,
+    dueTime: string | null,
+    columnId: string
+  ) => Promise<void>
 }
 
-export default function NewCardForm({ onCreate }: NewCardFormProps): JSX.Element {
+/**
+ * Ação global "+ Novo ticket" do quadro: abre o formulário com a coluna de
+ * destino selecionável (auto-selecionada quando só existe uma). Continua
+ * sendo o único ponto de criação de card — reaproveitado no header do board.
+ */
+export default function NewCardForm({ columns, onCreate }: NewCardFormProps): JSX.Element {
   const [open, setOpen] = useState(false)
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [dueDate, setDueDate] = useState('')
   const [dueTime, setDueTime] = useState('')
+  const [columnId, setColumnId] = useState('')
   const [busy, setBusy] = useState(false)
+
+  useEffect(() => {
+    if (!columnId && columns.length > 0) setColumnId(columns[0].id)
+  }, [columns, columnId])
 
   if (!open) {
     return (
-      <button className="primary-button" onClick={() => setOpen(true)}>
-        + Novo card
+      <button className="primary-button new-card-form__trigger" onClick={() => setOpen(true)} disabled={columns.length === 0}>
+        + Novo ticket
       </button>
     )
   }
@@ -25,14 +43,15 @@ export default function NewCardForm({ onCreate }: NewCardFormProps): JSX.Element
       className="new-card-form"
       onSubmit={async (e) => {
         e.preventDefault()
-        if (!title.trim() || busy) return
+        if (!title.trim() || !columnId || busy) return
         setBusy(true)
         try {
           await onCreate(
             title,
             description.trim() ? description : null,
             dueDate || null,
-            dueDate && dueTime ? dueTime : null
+            dueDate && dueTime ? dueTime : null,
+            columnId
           )
           setTitle('')
           setDescription('')
@@ -46,7 +65,7 @@ export default function NewCardForm({ onCreate }: NewCardFormProps): JSX.Element
     >
       <input
         autoFocus
-        placeholder="Título do card (ex.: Transformada de Laplace)"
+        placeholder="Título do ticket (ex.: Transformada de Laplace)"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         disabled={busy}
@@ -58,6 +77,15 @@ export default function NewCardForm({ onCreate }: NewCardFormProps): JSX.Element
         disabled={busy}
         rows={3}
       />
+      {columns.length > 1 && (
+        <select value={columnId} onChange={(e) => setColumnId(e.target.value)} disabled={busy} title="Coluna de destino">
+          {columns.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name}
+            </option>
+          ))}
+        </select>
+      )}
       <div className="new-card-form__due">
         <input
           type="date"
@@ -75,8 +103,8 @@ export default function NewCardForm({ onCreate }: NewCardFormProps): JSX.Element
         />
       </div>
       <div className="new-card-form__actions">
-        <button type="submit" className="primary-button" disabled={busy || !title.trim()}>
-          Criar card
+        <button type="submit" className="primary-button" disabled={busy || !title.trim() || !columnId}>
+          Criar ticket
         </button>
         <button
           type="button"
