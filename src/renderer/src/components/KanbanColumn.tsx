@@ -1,4 +1,3 @@
-import type { ReactNode } from 'react'
 import type { BoardColumn, Card } from '@shared/types'
 import KanbanCard from './KanbanCard'
 import type { CardActionId } from './CardActionsMenu'
@@ -17,7 +16,6 @@ interface KanbanColumnProps {
   onOpenCard: (card: Card) => void
   onCardAction: (card: Card, action: CardActionId) => void
   onContextMenu: (e: React.MouseEvent, columnId: string) => void
-  headerExtra?: ReactNode
 }
 
 /**
@@ -40,8 +38,7 @@ export default function KanbanColumn({
   onDropOnCard,
   onOpenCard,
   onCardAction,
-  onContextMenu,
-  headerExtra
+  onContextMenu
 }: KanbanColumnProps): JSX.Element {
   return (
     <div
@@ -83,8 +80,6 @@ export default function KanbanColumn({
         ))}
         {cards.length === 0 && <p className="empty-hint">Nenhum card aqui.</p>}
       </div>
-
-      {headerExtra && <div className="kanban-column__footer">{headerExtra}</div>}
     </div>
   )
 }

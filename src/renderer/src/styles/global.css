@@ -6,17 +6,20 @@
     -apple-system,
     sans-serif;
 
-  /* Paleta lavanda/roxo claro — visual de app de estudos, moderno e limpo. */
-  --bg: #f4f1fb;
+  /* Paleta azul com detalhes dourados — azul é a identidade principal,
+     dourado só entra como destaque pontual (ver --gold*). */
+  --bg: #eef3fb;
   --bg-elevated: #ffffff;
-  --bg-elevated-2: #ede8fb;
-  --bg-elevated-3: #e2daf7;
-  --border: #ddd3f5;
-  --text: #2c2440;
-  --text-muted: #786e99;
-  --accent: #7c5cf2;
-  --accent-strong: #6a47e0;
-  --accent-soft: #ede7fd;
+  --bg-elevated-2: #e2ecfa;
+  --bg-elevated-3: #d3e2f6;
+  --border: #c9d9f0;
+  --text: #16233a;
+  --text-muted: #56698c;
+  --accent: #3b82f6;
+  --accent-strong: #1e3a5f;
+  --accent-soft: #dce9fd;
+  --gold: #d4a72c;
+  --gold-soft: #faf1d8;
   --ok: #22b07d;
   --ok-soft: #dff5ec;
   --ok-strong: #18926a;
@@ -26,8 +29,8 @@
   --warn: #dc9a2e;
   --warn-soft: #faf0dc;
   --warn-strong: #a86400;
-  --chart-accent: #2a78d6;
-  --overlay: rgba(44, 36, 64, 0.35);
+  --chart-accent: #3b82f6;
+  --overlay: rgba(22, 35, 58, 0.35);
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
@@ -40,16 +43,18 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
     color-scheme: dark;
-    --bg: #17131f;
-    --bg-elevated: #221c30;
-    --bg-elevated-2: #2a2340;
-    --bg-elevated-3: #332b4d;
-    --border: #3d3557;
-    --text: #ece8fa;
-    --text-muted: #a99fc9;
-    --accent: #9d84f5;
-    --accent-strong: #b6a1ff;
-    --accent-soft: #2f2650;
+    --bg: #0f172a;
+    --bg-elevated: #1e293b;
+    --bg-elevated-2: #243247;
+    --bg-elevated-3: #2c3b52;
+    --border: #32445c;
+    --text: #e2e8f0;
+    --text-muted: #94a3b8;
+    --accent: #60a5fa;
+    --accent-strong: #3b82f6;
+    --accent-soft: #1e3a5f;
+    --gold: #f2c94c;
+    --gold-soft: rgba(242, 201, 76, 0.14);
     --ok: #34c98f;
     --ok-soft: #16332a;
     --ok-strong: #4fe3ac;
@@ -59,8 +64,8 @@
     --warn: #e3b256;
     --warn-soft: #3a2f18;
     --warn-strong: #f0c46a;
-    --chart-accent: #6ea8fe;
-    --overlay: rgba(10, 8, 16, 0.6);
+    --chart-accent: #60a5fa;
+    --overlay: rgba(5, 9, 18, 0.6);
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
     --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
   }
@@ -68,16 +73,18 @@
 
 :root[data-theme='dark'] {
   color-scheme: dark;
-  --bg: #17131f;
-  --bg-elevated: #221c30;
-  --bg-elevated-2: #2a2340;
-  --bg-elevated-3: #332b4d;
-  --border: #3d3557;
-  --text: #ece8fa;
-  --text-muted: #a99fc9;
-  --accent: #9d84f5;
-  --accent-strong: #b6a1ff;
-  --accent-soft: #2f2650;
+  --bg: #0f172a;
+  --bg-elevated: #1e293b;
+  --bg-elevated-2: #243247;
+  --bg-elevated-3: #2c3b52;
+  --border: #32445c;
+  --text: #e2e8f0;
+  --text-muted: #94a3b8;
+  --accent: #60a5fa;
+  --accent-strong: #3b82f6;
+  --accent-soft: #1e3a5f;
+  --gold: #f2c94c;
+  --gold-soft: rgba(242, 201, 76, 0.14);
   --ok: #34c98f;
   --ok-soft: #16332a;
   --ok-strong: #4fe3ac;
@@ -87,8 +94,8 @@
   --warn: #e3b256;
   --warn-soft: #3a2f18;
   --warn-strong: #f0c46a;
-  --chart-accent: #6ea8fe;
-  --overlay: rgba(10, 8, 16, 0.6);
+  --chart-accent: #60a5fa;
+  --overlay: rgba(5, 9, 18, 0.6);
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
 }
@@ -199,6 +206,7 @@ select {
 .app-nav__tab--active {
   background: var(--accent-soft);
   color: var(--accent-strong);
+  box-shadow: inset 0 -2px 0 var(--gold);
 }
 
 /* ---- Sino de notificações ---- */
@@ -452,64 +460,270 @@ select {
     right: -0.6rem;
   }
 
-  .study-panel {
+  /* ---- Navegação por telas (estreito) --------------------------------
+     Em vez de painéis lado a lado, cada modo é uma tela cheia e a troca
+     acontece na barra fixa de baixo. O quadro é um drill-down: lista de
+     matérias → quadro da matéria. Ver `useIsNarrow`. */
+
+  /* Mantém a cadeia flex de `.study-panel` (só troca a direção): é ela que faz
+     `.card-panel` → `.kanban-board` → `.kanban-column` esticarem até o rodapé. */
+  .study-panel--narrow {
+    flex-direction: column;
     overflow: hidden;
   }
 
-  .sidebar-mobile-toggle {
-    display: inline-flex;
+  .app-root--narrow {
+    /* Espaço pra barra de abas fixa não cobrir o conteúdo. */
+    padding-bottom: calc(3.75rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  .app-bottom-nav {
+    position: fixed;
+    inset: auto 0 0 0;
+    z-index: 60;
+    display: flex;
+    background: var(--bg-elevated);
+    border-top: 1px solid var(--border);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .app-bottom-nav__tab {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    position: absolute;
-    top: 0.6rem;
-    left: 0.6rem;
-    z-index: 50;
-    width: 2.1rem;
-    height: 2.1rem;
-    background: var(--bg-elevated);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    box-shadow: var(--shadow-sm);
+    gap: 0.15rem;
+    min-height: 3.75rem;
+    padding: 0.4rem 0.25rem;
+    background: none;
+    border: none;
+    color: var(--text-muted);
     cursor: pointer;
   }
 
-  /* No mobile "collapsed" passa a significar "drawer fechado": some fora
-     da tela em vez de encolher pra faixa fina (o comportamento desktop). */
-  .sidebar,
-  .sidebar--collapsed {
-    position: absolute;
-    inset: 0 auto 0 0;
-    z-index: 45;
-    width: 82vw;
-    max-width: 300px;
-    padding: 1.1rem 1rem;
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+  .app-bottom-nav__tab--active {
+    color: var(--accent-strong);
   }
 
-  .sidebar--collapsed {
-    transform: translateX(-100%);
-    box-shadow: none;
+  .app-bottom-nav__icon {
+    font-size: 1.25rem;
+    line-height: 1;
   }
 
-  .sidebar-backdrop {
-    display: block;
-    position: absolute;
-    inset: 0;
-    z-index: 40;
-    background: rgba(0, 0, 0, 0.35);
+  .app-bottom-nav__label {
+    font-size: 0.68rem;
+    font-weight: 600;
   }
+
+  .app-header__back,
+  .card-panel__back {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    flex-shrink: 0;
+    font-size: 1.15rem;
+    background: none;
+    border: none;
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    cursor: pointer;
+  }
+
+  .app-header__back:active,
+  .card-panel__back:active {
+    background: var(--bg-elevated-2);
+  }
+
+  .app-header__icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    font-size: 1.05rem;
+    background: none;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    color: var(--text-muted);
+    cursor: pointer;
+  }
+
+  .app-header__icon-btn--active {
+    color: var(--accent-strong);
+    border-color: var(--border);
+    background: var(--accent-soft);
+  }
+
+  /* ---- Tela 1: lista de matérias ---- */
+
+  .group-screen {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    height: 100%;
+    overflow-y: auto;
+    padding: 1rem;
+  }
+
+  .group-screen__header h2 {
+    margin: 0;
+    font-size: 1.15rem;
+  }
+
+  .group-list--screen .group-row {
+    /* Linhas altas o suficiente pra tocar sem errar. */
+    min-height: 3rem;
+    border: 1px solid var(--border);
+    background: var(--bg-elevated);
+    margin-bottom: 0.5rem;
+    padding-right: 0.35rem;
+  }
+
+  .group-list--screen .group-row__name {
+    padding: 0.85rem 0.6rem;
+    font-size: 0.98rem;
+  }
+
+  .group-list--screen .group-row__add,
+  .group-list--screen .group-row__delete {
+    min-width: 2.4rem;
+    min-height: 2.4rem;
+  }
+
+  /* No desktop o ✕ só aparece no hover — que não existe no toque. Sem isto,
+     excluir uma matéria fica inalcançável no celular. */
+  .group-list--screen .group-row__delete {
+    opacity: 1;
+  }
+
+  .group-screen__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 15vh;
+    padding: 0 1rem;
+    text-align: center;
+  }
+
+  .group-screen__empty-title {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 600;
+  }
+
+  .group-screen__empty-text {
+    margin: 0 0 0.75rem;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+  }
+
+  .group-screen__empty .secondary-button {
+    min-height: 3rem;
+    padding: 0 1.5rem;
+    font-size: 1rem;
+  }
+
+  /* ---- Tela 2: quadro da matéria ---- */
 
   .card-panel {
     padding: 1rem;
   }
 
-  .kanban-column {
-    flex-basis: 84vw;
+  /* Classe dobrada de propósito: este @media vem ANTES das regras base no
+     arquivo, então com especificidade igual `.card-panel__header` venceria
+     por ordem. O mesmo vale pro `.kanban-board--carousel` abaixo. */
+  .card-panel__header.card-panel__header--narrow {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.35rem;
+    margin-left: -0.5rem;
+    margin-bottom: 0;
+  }
+
+  .card-panel__header--narrow h2 {
+    margin: 0;
+    font-size: 1.1rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .kanban-chips {
+    display: flex;
+    gap: 0.4rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding: 0.6rem 0 0.5rem;
+  }
+
+  .kanban-chips::-webkit-scrollbar {
+    display: none;
+  }
+
+  .kanban-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-shrink: 0;
+    min-height: 2.25rem;
+    padding: 0 0.85rem;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+
+  .kanban-chip--active {
+    background: var(--accent-soft);
+    border-color: var(--accent-strong);
+    color: var(--accent-strong);
+    font-weight: 600;
+  }
+
+  .kanban-chip__count {
+    font-size: 0.72rem;
+    opacity: 0.75;
+  }
+
+  /* Carrossel: cada coluna ocupa a largura toda e o snap trava nela. A barra
+     de rolagem some — quem navega é o dedo (ou os chips acima). */
+  .kanban-board.kanban-board--carousel {
+    scroll-snap-type: x mandatory;
+    gap: 0;
+    scrollbar-width: none;
+    padding-bottom: 0;
+  }
+
+  .kanban-board.kanban-board--carousel::-webkit-scrollbar {
+    display: none;
+  }
+
+  .kanban-board--carousel .kanban-column {
+    flex: 0 0 100%;
     scroll-snap-align: start;
   }
 
-  .kanban-board {
-    scroll-snap-type: x proximity;
+  /* Mesmo caso do ✕ das matérias: o menu "⋯" do card depende de hover no
+     desktop, então no toque precisa ficar sempre visível. */
+  .kanban-card .card-actions-menu__trigger {
+    opacity: 1;
+  }
+
+  .kanban-board__toolbar {
+    justify-content: stretch;
+  }
+
+  .kanban-board__toolbar .new-card-form,
+  .kanban-board__toolbar .new-card-form__trigger {
+    width: 100%;
   }
 
   .calendar-grid__day {
@@ -721,7 +935,8 @@ select {
 }
 
 .new-card-form input,
-.new-card-form textarea {
+.new-card-form textarea,
+.new-card-form select {
   background: var(--bg-elevated);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -736,6 +951,24 @@ select {
 }
 
 /* ---- Kanban ---- */
+
+.kanban-board-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-height: 0;
+}
+
+.kanban-board__toolbar {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.kanban-board__toolbar .new-card-form {
+  align-items: flex-end;
+  width: min(320px, 100%);
+}
 
 .kanban-board {
   flex: 1;
@@ -844,11 +1077,6 @@ select {
   padding: 0 0.7rem 0.7rem;
   overflow-y: auto;
   min-height: 40px;
-}
-
-.kanban-column__footer {
-  padding: 0.6rem 0.7rem;
-  border-top: 1px solid var(--border);
 }
 
 .kanban-card {

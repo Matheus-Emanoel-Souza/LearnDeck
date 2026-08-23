@@ -5,17 +5,48 @@ import StudyPanel from './pages/StudyPanel'
 import Dashboard from './pages/Dashboard'
 import CalendarPage from './pages/CalendarPage'
 import NotificationsPage from './pages/NotificationsPage'
+import UpdatesPage from './pages/UpdatesPage'
 import Settings from './pages/Settings'
 import CardDetailPage from './pages/CardDetailPage'
 import NotificationBell from './components/NotificationBell'
 import ThemeToggle from './components/ThemeToggle'
+import { useIsNarrow } from './lib/useIsNarrow'
 
-type Tab = 'board' | 'dashboard' | 'calendar' | 'notifications' | 'settings'
+type Tab = 'board' | 'dashboard' | 'calendar' | 'notifications' | 'updates' | 'settings'
+
+/** Abas da barra inferior no mobile. Notificações fica de fora (o sino no
+ *  header já abre) e Configurações vira o botão ⚙ ao lado do tema — as duas
+ *  são telas secundárias, alcançadas por cima da aba atual e com voltar. */
+const BOTTOM_TABS = [
+  { id: 'board', label: 'Quadro', icon: '📋' },
+  { id: 'dashboard', label: 'Dashboard', icon: '📊' },
+  { id: 'calendar', label: 'Calendário', icon: '📅' }
+] as const satisfies ReadonlyArray<{ id: Tab; label: string; icon: string }>
+
+const SECONDARY_TITLES: Record<string, string> = {
+  notifications: 'Notificações',
+  updates: 'Atualizações',
+  settings: 'Configurações'
+}
 
 export default function App(): JSX.Element {
   const [info, setInfo] = useState<AppInfo | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [tab, setTab] = useState<Tab>('board')
+  const isNarrow = useIsNarrow()
+
+  // Aba pra onde o "voltar" das telas secundárias (notificações/configurações)
+  // retorna — sempre a última aba principal visitada.
+  const [returnTab, setReturnTab] = useState<Tab>('board')
+  const isSecondaryTab = tab === 'notifications' || tab === 'updates' || tab === 'settings'
+
+  const openSecondary = useCallback(
+    (target: Tab) => {
+      if (!isSecondaryTab) setReturnTab(tab)
+      setTab(target)
+    },
+    [tab, isSecondaryTab]
+  )
 
   // Card aberto "globalmente" — Calendário e Notificações vivem fora do
   // StudyPanel, então pra abrir um ticket a partir delas o overlay do card
@@ -84,47 +115,66 @@ export default function App(): JSX.Element {
   }
 
   return (
-    <div className="app-root">
+    <div className={`app-root ${isNarrow ? 'app-root--narrow' : ''}`}>
       <header className="app-header">
-        <h1>LearnDeck</h1>
+        {isNarrow && isSecondaryTab ? (
+          <button
+            type="button"
+            className="app-header__back"
+            onClick={() => setTab(returnTab)}
+            aria-label="Voltar"
+          >
+            ←
+          </button>
+        ) : null}
+        <h1>{isNarrow && isSecondaryTab ? SECONDARY_TITLES[tab] : 'LearnDeck'}</h1>
         <span className="app-header__version">v{info.version}</span>
-        <nav className="app-nav">
+        {!isNarrow && (
+          <nav className="app-nav">
+            <button
+              className={`app-nav__tab ${tab === 'board' ? 'app-nav__tab--active' : ''}`}
+              onClick={() => setTab('board')}
+            >
+              Quadro
+            </button>
+            <button
+              className={`app-nav__tab ${tab === 'dashboard' ? 'app-nav__tab--active' : ''}`}
+              onClick={() => setTab('dashboard')}
+            >
+              Dashboard
+            </button>
+            <button
+              className={`app-nav__tab ${tab === 'calendar' ? 'app-nav__tab--active' : ''}`}
+              onClick={() => setTab('calendar')}
+            >
+              Calendário
+            </button>
+            <button
+              className={`app-nav__tab ${tab === 'notifications' ? 'app-nav__tab--active' : ''}`}
+              onClick={() => setTab('notifications')}
+            >
+              Notificações
+            </button>
+            <button
+              className={`app-nav__tab ${tab === 'settings' ? 'app-nav__tab--active' : ''}`}
+              onClick={() => setTab('settings')}
+            >
+              Configurações
+            </button>
+          </nav>
+        )}
+        <NotificationBell workspaceId={info.workspace.id} onOpenUpdates={() => openSecondary('updates')} />
+        {isNarrow && (
           <button
-            className={`app-nav__tab ${tab === 'board' ? 'app-nav__tab--active' : ''}`}
-            onClick={() => setTab('board')}
+            type="button"
+            className={`app-header__icon-btn ${tab === 'settings' ? 'app-header__icon-btn--active' : ''}`}
+            onClick={() => openSecondary('settings')}
+            title="Configurações"
+            aria-label="Configurações"
           >
-            Quadro
+            ⚙
           </button>
-          <button
-            className={`app-nav__tab ${tab === 'dashboard' ? 'app-nav__tab--active' : ''}`}
-            onClick={() => setTab('dashboard')}
-          >
-            Dashboard
-          </button>
-          <button
-            className={`app-nav__tab ${tab === 'calendar' ? 'app-nav__tab--active' : ''}`}
-            onClick={() => setTab('calendar')}
-          >
-            Calendário
-          </button>
-          <button
-            className={`app-nav__tab ${tab === 'notifications' ? 'app-nav__tab--active' : ''}`}
-            onClick={() => setTab('notifications')}
-          >
-            Notificações
-          </button>
-          <button
-            className={`app-nav__tab ${tab === 'settings' ? 'app-nav__tab--active' : ''}`}
-            onClick={() => setTab('settings')}
-          >
-            Configurações
-          </button>
-        </nav>
-        <NotificationBell
-          workspaceId={info.workspace.id}
-          onOpenCard={openCardGlobally}
-          onViewAll={() => setTab('notifications')}
-        />
+        )}
         <ThemeToggle />
       </header>
       {tab === 'board' && <StudyPanel workspaceId={info.workspace.id} />}
@@ -143,10 +193,34 @@ export default function App(): JSX.Element {
           <NotificationsPage workspaceId={info.workspace.id} onOpenCard={openCardGlobally} />
         </div>
       )}
+      {tab === 'updates' && (
+        <div className="card-panel">
+          <UpdatesPage />
+        </div>
+      )}
       {tab === 'settings' && (
         <div className="card-panel">
           <Settings currentVersion={info.version} />
         </div>
+      )}
+
+      {isNarrow && (
+        <nav className="app-bottom-nav" aria-label="Navegação principal">
+          {BOTTOM_TABS.map(({ id, label, icon }) => (
+            <button
+              key={id}
+              type="button"
+              className={`app-bottom-nav__tab ${tab === id ? 'app-bottom-nav__tab--active' : ''}`}
+              onClick={() => setTab(id)}
+              aria-current={tab === id ? 'page' : undefined}
+            >
+              <span className="app-bottom-nav__icon" aria-hidden="true">
+                {icon}
+              </span>
+              <span className="app-bottom-nav__label">{label}</span>
+            </button>
+          ))}
+        </nav>
       )}
     </div>
   )

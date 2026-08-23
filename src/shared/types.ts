@@ -227,6 +227,8 @@ export interface CreateCardInput {
   description?: string | null
   dueDate?: string | null
   dueTime?: string | null
+  /** Coluna de destino escolhida no "+ Novo ticket"; sem isso cai na primeira coluna da matéria. */
+  columnId?: string
 }
 
 export interface UpdateCardInput {

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { MOBILE_BREAKPOINT_PX, loadSidebarCollapsed, saveSidebarCollapsed } from '../lib/sidebarPrefs'
+import { loadSidebarCollapsed, saveSidebarCollapsed } from '../lib/sidebarPrefs'
 import type { BoardColumn, Card, Group } from '@shared/types'
 import { buildGroupTree } from '../lib/groupTree'
 import { reorderCards } from '../lib/kanban'
@@ -7,6 +7,7 @@ import GroupSidebar from '../components/GroupSidebar'
 import KanbanBoard from '../components/KanbanBoard'
 import type { CardActionId } from '../components/CardActionsMenu'
 import CardDetailPage, { type CardDetailFocus } from './CardDetailPage'
+import { useIsNarrow } from '../lib/useIsNarrow'
 
 interface StudyPanelProps {
   workspaceId: string
@@ -27,6 +28,7 @@ export default function StudyPanel({ workspaceId }: StudyPanelProps): JSX.Elemen
   const [viewingColumns, setViewingColumns] = useState<BoardColumn[]>([])
   const [viewingCardFocus, setViewingCardFocus] = useState<CardDetailFocus | null>(null)
   const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(loadSidebarCollapsed)
+  const isNarrow = useIsNarrow()
 
   const tree = useMemo(() => buildGroupTree(groups), [groups])
 
@@ -118,11 +120,12 @@ export default function StudyPanel({ workspaceId }: StudyPanelProps): JSX.Elemen
     title: string,
     description: string | null,
     dueDate: string | null,
-    dueTime: string | null
+    dueTime: string | null,
+    columnId: string
   ): Promise<void> {
     if (!selectedGroupId) return
     try {
-      await window.api.cards.create({ groupId: selectedGroupId, title, description, dueDate, dueTime })
+      await window.api.cards.create({ groupId: selectedGroupId, title, description, dueDate, dueTime, columnId })
       await reloadCards(selectedGroupId)
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
@@ -288,29 +291,78 @@ export default function StudyPanel({ workspaceId }: StudyPanelProps): JSX.Elemen
     )
   }
 
+  const board = (
+    <>
+      {loadingCards && <p className="empty-hint">Carregando cards…</p>}
+
+      {!loadingCards && (
+        <KanbanBoard
+          cards={cards}
+          columns={columns}
+          onMoveCard={handleMoveCard}
+          onCreateCard={handleCreateCard}
+          onOpenCard={(card) => void openCard(card, null)}
+          onCardAction={(card, action) => void handleCardAction(card, action)}
+          onCreateColumn={handleCreateColumn}
+          onRenameColumn={handleRenameColumn}
+          onReorderColumns={handleReorderColumns}
+          onDuplicateColumn={handleDuplicateColumn}
+          onSetColumnColor={handleSetColumnColor}
+          onDeleteColumn={handleDeleteColumn}
+        />
+      )}
+    </>
+  )
+
+  // Telas estreitas usam drill-down: tela 1 lista as matérias, tela 2 mostra o
+  // quadro da matéria escolhida (com voltar). Sem sidebar nem drawer.
+  if (isNarrow) {
+    if (!selectedGroup) {
+      return (
+        <div className="study-panel study-panel--narrow">
+          <GroupSidebar
+            asScreen
+            tree={tree}
+            selectedGroupId={selectedGroupId}
+            onSelect={setSelectedGroupId}
+            onCreateGroup={handleCreateGroup}
+            onDeleteGroup={handleDeleteGroup}
+            collapsed={false}
+            onToggleCollapse={toggleSidebar}
+          />
+        </div>
+      )
+    }
+
+    return (
+      <div className="study-panel study-panel--narrow">
+        <section className="card-panel">
+          {error && <p className="status status--error">{error}</p>}
+
+          <header className="card-panel__header card-panel__header--narrow">
+            <button
+              type="button"
+              className="card-panel__back"
+              onClick={() => setSelectedGroupId(null)}
+              aria-label="Voltar para a lista de matérias"
+            >
+              ←
+            </button>
+            <h2>{selectedGroup.name}</h2>
+          </header>
+
+          {board}
+        </section>
+      </div>
+    )
+  }
+
   return (
     <div className="study-panel">
-      {/* Só aparece no mobile (CSS) e só quando o drawer está fechado — aberto,
-          o próprio botão "«" no topo da sidebar já fecha. */}
-      {sidebarCollapsed && (
-        <button
-          type="button"
-          className="sidebar-mobile-toggle"
-          onClick={toggleSidebar}
-          aria-label="Abrir barra lateral"
-        >
-          ☰
-        </button>
-      )}
-
       <GroupSidebar
         tree={tree}
         selectedGroupId={selectedGroupId}
-        onSelect={(groupId) => {
-          setSelectedGroupId(groupId)
-          // No mobile o drawer cobre o quadro; fecha sozinho ao escolher uma matéria.
-          if (window.innerWidth <= MOBILE_BREAKPOINT_PX) setSidebarCollapsed(true)
-        }}
+        onSelect={setSelectedGroupId}
         onCreateGroup={handleCreateGroup}
         onDeleteGroup={handleDeleteGroup}
         collapsed={sidebarCollapsed}
@@ -330,24 +382,7 @@ export default function StudyPanel({ workspaceId }: StudyPanelProps): JSX.Elemen
               <h2>{selectedGroup.name}</h2>
             </header>
 
-            {loadingCards && <p className="empty-hint">Carregando cards…</p>}
-
-            {!loadingCards && (
-              <KanbanBoard
-                cards={cards}
-                columns={columns}
-                onMoveCard={handleMoveCard}
-                onCreateCard={handleCreateCard}
-                onOpenCard={(card) => void openCard(card, null)}
-                onCardAction={(card, action) => void handleCardAction(card, action)}
-                onCreateColumn={handleCreateColumn}
-                onRenameColumn={handleRenameColumn}
-                onReorderColumns={handleReorderColumns}
-                onDuplicateColumn={handleDuplicateColumn}
-                onSetColumnColor={handleSetColumnColor}
-                onDeleteColumn={handleDeleteColumn}
-              />
-            )}
+            {board}
           </>
         )}
       </section>
