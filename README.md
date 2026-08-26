@@ -36,6 +36,22 @@ notificações, e veja tudo num dashboard com números e gráficos.
 
 ---
 
+## 📸 Capturas de tela
+
+| Dashboard | Quadro Kanban |
+|---|---|
+| ![Dashboard com métricas de estudo](docs/screenshots/dashboard.png) | ![Quadro Kanban de uma matéria, colunas coloridas](docs/screenshots/quadro-estruturas-de-dados.png) |
+
+| Vários quadros (matérias e projetos) | Notificações de prazo vencido |
+|---|---|
+| ![Quadro de outra matéria](docs/screenshots/quadro-sistemas-operacionais.png) | ![Central de notificações](docs/screenshots/notificacoes.png) |
+
+| Projetos do GitHub como tickets | Calendário de prazos |
+|---|---|
+| ![Quadro Projetos (GitHub)](docs/screenshots/quadro-projetos-github.png) | ![Calendário com prazos por matéria](docs/screenshots/calendario.png) |
+
+---
+
 ## 📋 Índice
 
 - [Objetivo do projeto](#-objetivo-do-projeto)

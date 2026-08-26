@@ -9,3 +9,5 @@ Thumbs.db
 *.tsbuildinfo
 src/web/public/sql-wasm.wasm
 src/web/public/sql-wasm-browser.wasm
+
+.claude
