@@ -82,3 +82,7 @@ Mesmo raciocínio do documento [`FUNCIONAMENTO.md`](./FUNCIONAMENTO.md) do outro
 ## Instalável como atalho (opcional)
 
 Igual ao outro projeto: manifest + service worker deixam o navegador oferecer "instalar/adicionar à tela inicial". É só um atalho — o app funciona igual sem isso, direto do link.
+
+O convite não fica a cargo da barrinha padrão do navegador: `src/web/InstallPrompt.tsx` intercepta o evento `beforeinstallprompt` e mostra um cartão com o tema do app, e no iPhone (que não tem API de instalação) exibe a instrução manual. Montado em `main.tsx`, fora de `App` — nada compartilhado com o Electron foi tocado.
+
+Como funciona, o porquê de cada peça e como testar: [`PWA-INSTALAR.md`](./PWA-INSTALAR.md).
