@@ -1,5 +1,7 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { COLUMN_COLOR_SWATCHES } from '../lib/columnColors'
+
+const VIEWPORT_MARGIN_PX = 8
 
 interface ColumnContextMenuProps {
   x: number
@@ -36,6 +38,22 @@ export default function ColumnContextMenu({
   const [panel, setPanel] = useState<Panel>(null)
   const [name, setName] = useState(currentName)
   const [newColumnName, setNewColumnName] = useState('')
+  // No toque (tocar e segurar), o ponto de abertura costuma cair perto da
+  // borda da tela — sem isso o menu nasce cortado. Mede o próprio tamanho
+  // depois de montado e reencaixa dentro da viewport.
+  const [position, setPosition] = useState({ left: x, top: y })
+
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const rect = el.getBoundingClientRect()
+    const maxLeft = Math.max(VIEWPORT_MARGIN_PX, window.innerWidth - rect.width - VIEWPORT_MARGIN_PX)
+    const maxTop = Math.max(VIEWPORT_MARGIN_PX, window.innerHeight - rect.height - VIEWPORT_MARGIN_PX)
+    setPosition({
+      left: Math.min(x, maxLeft),
+      top: Math.min(y, maxTop)
+    })
+  }, [x, y])
 
   function togglePanel(p: Panel): void {
     setPanel((current) => (current === p ? null : p))
@@ -70,7 +88,7 @@ export default function ColumnContextMenu({
   }, [onClose])
 
   return (
-    <div ref={ref} className="context-menu" style={{ left: x, top: y }}>
+    <div ref={ref} className="context-menu" style={{ left: position.left, top: position.top }}>
       <div className="context-menu__title">{currentName}</div>
 
       <button

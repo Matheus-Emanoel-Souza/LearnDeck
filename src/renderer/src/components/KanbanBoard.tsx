@@ -169,10 +169,7 @@ export default function KanbanBoard({
             onDropOnCard={(index) => void finishDrop(column.id, index)}
             onOpenCard={onOpenCard}
             onCardAction={onCardAction}
-            onContextMenu={(e, columnId) => {
-              e.preventDefault()
-              setContextMenu({ columnId, x: e.clientX, y: e.clientY })
-            }}
+            onContextMenu={(x, y, columnId) => setContextMenu({ columnId, x, y })}
           />
         ))}
 

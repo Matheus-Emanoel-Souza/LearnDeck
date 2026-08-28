@@ -1005,6 +1005,12 @@ select {
   padding: 0.8rem 0.9rem 0.5rem;
   flex-shrink: 0;
   cursor: grab;
+  /* Sem isso, tocar e segurar no toque dispara o menu de seleção/callout
+     nativo do navegador (Copiar, Pesquisar…) em cima do nosso próprio menu
+     de contexto (ver useLongPress). */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .kanban-column__header:active {

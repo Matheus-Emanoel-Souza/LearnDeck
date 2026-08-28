@@ -1,6 +1,7 @@
 import type { BoardColumn, Card } from '@shared/types'
 import KanbanCard from './KanbanCard'
 import type { CardActionId } from './CardActionsMenu'
+import { useLongPress } from '../lib/useLongPress'
 
 interface KanbanColumnProps {
   column: BoardColumn
@@ -15,15 +16,15 @@ interface KanbanColumnProps {
   onDropOnCard: (index: number) => void
   onOpenCard: (card: Card) => void
   onCardAction: (card: Card, action: CardActionId) => void
-  onContextMenu: (e: React.MouseEvent, columnId: string) => void
+  onContextMenu: (x: number, y: number, columnId: string) => void
 }
 
 /**
  * Coluna do quadro Kanban: cards arrastáveis + a própria coluna arrastável
  * (pega e solta pelo cabeçalho pra reordenar entre as outras — ver
  * KanbanBoard). Renomear/duplicar/cor/excluir ficam no menu de contexto
- * (botão direito no cabeçalho) — o cabeçalho é draggable, então clique nele
- * não funciona pra editar o nome.
+ * (botão direito no cabeçalho, ou tocar e segurar no toque) — o cabeçalho é
+ * draggable, então clique nele não funciona pra editar o nome.
  */
 export default function KanbanColumn({
   column,
@@ -40,6 +41,11 @@ export default function KanbanColumn({
   onCardAction,
   onContextMenu
 }: KanbanColumnProps): JSX.Element {
+  // Toque e segure = mesmo menu do botão direito do mouse; o `contextmenu`
+  // nativo não é confiável em toque (varia por navegador/PWA) e o cabeçalho
+  // já é `draggable`, o que atrapalha ainda mais.
+  const longPress = useLongPress((x, y) => onContextMenu(x, y, column.id))
+
   return (
     <div
       className={`kanban-column ${isDropTarget ? 'kanban-column--drop-target' : ''}`}
@@ -57,8 +63,14 @@ export default function KanbanColumn({
         className="kanban-column__header"
         draggable
         onDragStart={() => onColumnDragStart(column.id)}
-        onContextMenu={(e) => onContextMenu(e, column.id)}
-        title="Arraste para reordenar · botão direito para renomear e mais opções"
+        onContextMenu={(e) => {
+          e.preventDefault()
+          onContextMenu(e.clientX, e.clientY, column.id)
+        }}
+        onTouchStart={longPress.onTouchStart}
+        onTouchMove={longPress.onTouchMove}
+        onTouchEnd={longPress.onTouchEnd}
+        title="Arraste para reordenar · botão direito (ou toque e segure) para renomear e mais opções"
       >
         <h3>{column.name}</h3>
         <span className="kanban-column__count">{cards.length}</span>
