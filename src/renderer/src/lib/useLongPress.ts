@@ -9,6 +9,14 @@ interface LongPressHandlers {
   onTouchStart: (e: React.TouchEvent) => void
   onTouchMove: (e: React.TouchEvent) => void
   onTouchEnd: (e: React.TouchEvent) => void
+  onTouchCancel: (e: React.TouchEvent) => void
+}
+
+interface LongPressOptions {
+  /** Toque iniciado dentro de um elemento que casa com esse seletor é
+   * ignorado — ex.: pressionar um card não deve abrir o menu da coluna, o
+   * card já tem sua própria interação (abrir/menu "⋯"). */
+  ignoreSelector?: string
 }
 
 /**
@@ -20,7 +28,10 @@ interface LongPressHandlers {
  * horizontal do carrossel — quem cancela um long-press indevido é o
  * `MOVE_TOLERANCE_PX`.
  */
-export function useLongPress(onLongPress: (x: number, y: number) => void): LongPressHandlers {
+export function useLongPress(
+  onLongPress: (x: number, y: number) => void,
+  options: LongPressOptions = {}
+): LongPressHandlers {
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const startRef = useRef<{ x: number; y: number } | null>(null)
   // Se o long-press já disparou, o dedo solta em cima do menu recém-aberto —
@@ -39,6 +50,7 @@ export function useLongPress(onLongPress: (x: number, y: number) => void): LongP
   function onTouchStart(e: React.TouchEvent): void {
     const touch = e.touches[0]
     if (!touch) return
+    if (options.ignoreSelector && (e.target as HTMLElement).closest(options.ignoreSelector)) return
     firedRef.current = false
     startRef.current = { x: touch.clientX, y: touch.clientY }
     timerRef.current = setTimeout(() => {
@@ -65,5 +77,12 @@ export function useLongPress(onLongPress: (x: number, y: number) => void): LongP
     clear()
   }
 
-  return { onTouchStart, onTouchMove, onTouchEnd }
+  // O SO/navegador pode cancelar o toque no meio (ex.: gesto de sistema
+  // assumindo o controle) — sem isso o timer ficava correndo escondido e
+  // ainda podia disparar o menu depois que o dedo já nem estava mais lá.
+  function onTouchCancel(): void {
+    clear()
+  }
+
+  return { onTouchStart, onTouchMove, onTouchEnd, onTouchCancel }
 }
