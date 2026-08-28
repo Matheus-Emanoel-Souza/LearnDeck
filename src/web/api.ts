@@ -8,6 +8,7 @@
  */
 import type Database from 'better-sqlite3'
 import { getDatabase } from './db/connection'
+import { applyWebUpdate, checkWebUpdate, getWebUpdaterStatus, onWebUpdaterStatus } from './updaterWeb'
 import { ensureDefaultWorkspace } from '../main/repositories/workspaceRepository'
 import { listGroups, updateGroup } from '../main/repositories/groupRepository'
 import { createGroup, deleteGroup } from '../main/services/groupService'
@@ -95,7 +96,9 @@ import type {
 } from '@shared/types'
 
 const OVERDUE_SCAN_INTERVAL_MS = 60_000
-const WEB_APP_VERSION = 'web'
+// Hash curto do commit do build corrente (ver vite.web.config.ts) — usado
+// como "versão" exibida e como base da checagem de atualização.
+const WEB_APP_VERSION = __WEB_BUILD_ID__
 
 async function db(): Promise<Database.Database> {
   return (await getDatabase()) as unknown as Database.Database
@@ -234,14 +237,14 @@ export async function installWebApi(): Promise<void> {
     dashboard: {
       getSummary: async (workspaceId) => getDashboardSummary(await db(), workspaceId)
     },
-    // Auto-update (electron-updater) não existe fora do Electron — build web
-    // é sempre "a versão que está no ar", sem instalador pra atualizar.
+    // Sem electron-updater fora do Electron — "atualizar" no build web é
+    // comparar o build corrente com o publicado e recarregar. Ver updaterWeb.ts.
     updater: {
-      getStatus: async () => ({ state: 'unsupported' }),
-      check: async () => {},
-      download: async () => {},
-      install: async () => {},
-      onStatus: () => () => {}
+      getStatus: async () => getWebUpdaterStatus(),
+      check: () => checkWebUpdate(),
+      download: async () => applyWebUpdate(),
+      install: async () => applyWebUpdate(),
+      onStatus: onWebUpdaterStatus
     }
   }
 }

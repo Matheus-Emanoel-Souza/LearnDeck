@@ -9,3 +9,7 @@ Thumbs.db
 *.tsbuildinfo
 src/web/public/sql-wasm.wasm
 src/web/public/sql-wasm-browser.wasm
+src/web/public/version.json
+
+# Claude Code (config local, não do projeto)
+.claude/

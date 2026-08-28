@@ -56,8 +56,15 @@ A UI só conhece `window.api.*` — nunca importa Electron nem SQLite diretament
 | `db/idbStore.ts` | IndexedDB chave/valor cru, sem dependência externa. |
 | `attachmentsWeb.ts` | Equivalente a `main/services/attachmentService.ts`: sem diálogo nativo de arquivo nem disco — usa `<input type=file>` e grava o Blob no IndexedDB. |
 | `notificationScannerWeb.ts` | Equivalente a `main/notificationScanner.ts`: sem `BrowserWindow`, avisa a própria aba via `EventTarget`. |
+| `updaterWeb.ts` | Equivalente a `main/updater.ts`: sem `electron-updater`, "atualizar" é comparar `version.json` com o build corrente e recarregar. Ver "Atualização" abaixo. |
 | `api.ts` | Substitui `src/preload` + `src/main/ipc/*`: monta `window.api` chamando serviços/repositórios direto. |
 | `main.tsx`, `index.html`, `public/` | Bootstrap do PWA (manifest, service worker, ícone). |
+
+## Atualização
+
+Configurações > Sobre & atualizações funciona igual ao desktop, mas sem instalador: "Verificar atualizações" busca `version.json` (gerado a cada `build:webapp`, com o hash curto do commit — ver `vite.web.config.ts`) direto da rede, ignorando cache, e compara com o hash embutido no bundle que está rodando (`__WEB_BUILD_ID__`). Se forem diferentes, "Atualizar agora" só dá `location.reload()` — o service worker (rede-primeiro pro HTML, ver `public/sw.js`) garante que essa recarga já busca o HTML e os bundles novos, não uma cópia em cache.
+
+`version.json` não é versionado (fica em `src/web/public/`, no `.gitignore`, ao lado dos `.wasm` do sql.js) — é gerado a cada build, não faz sentido commitar.
 
 ## O que foi tocado no código existente
 
@@ -74,7 +81,7 @@ Mesmo raciocínio do documento [`FUNCIONAMENTO.md`](./FUNCIONAMENTO.md) do outro
 
 ## Limitações conhecidas do build web
 
-- **Sem auto-update**: `electron-updater` não existe fora do Electron; a aba "Configurações" mostra estado `unsupported`.
+- **Sem auto-update automático ao abrir**: diferente do desktop, o build web não checa sozinho ao iniciar — checar é sempre um clique do usuário em Configurações (ver "Atualização" abaixo).
 - **Imagens do caderno**: são salvas como `ldattach://cardId/attachmentId` (mesmo formato do desktop, pra manter o Markdown portátil). O navegador não resolve esse esquema sozinho, então `attachmentImageResolver.ts` troca o `src` por uma URL de Blob assim que a imagem entra na tela — pode haver um flash antes de carregar.
 - **Sem backup** (ver acima).
 - **Um IndexedDB por navegador/dispositivo** — não sincroniza entre abas de navegadores diferentes nem entre desktop e web.
