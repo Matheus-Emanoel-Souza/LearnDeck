@@ -2136,6 +2136,20 @@ select {
   color: var(--text);
 }
 
+.settings-backup-actions {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin: 0.8rem 0;
+}
+
+/* O <input type=file> real fica invisível; o botão "Importar backup" é que
+   dispara o clique nele (fileInputRef), pra manter a aparência do botão
+   igual à do resto da tela em vez do input nativo do navegador. */
+.settings-backup-file-input {
+  display: none;
+}
+
 /* ---- Badge de status ---- */
 
 .status-badge {

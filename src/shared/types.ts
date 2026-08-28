@@ -358,3 +358,55 @@ export interface DashboardSummary {
   openCardsBySubject: SubjectOpenCount[]
   cardsOpenedByDay: DailyCardCount[]
 }
+
+// ---- Backup (exportar/importar tudo como um único JSON — ver backupService.ts) ----
+
+export const BACKUP_FORMAT = 'learndeck-backup'
+export const BACKUP_VERSION = 1
+
+/** Vínculo card↔tag (a tabela `card_tags` não tem `id` próprio — chave composta). */
+export interface CardTagLink {
+  cardId: string
+  tagId: string
+}
+
+/**
+ * Tudo que representa dado do usuário (matérias/projetos e o conteúdo dos
+ * tickets), pronto para reconstrução completa. Fica de fora, deliberadamente:
+ * o registro do workspace em si (na importação, tudo é anexado ao workspace
+ * atual do dispositivo); `notifications` (derivadas dos prazos — recriadas
+ * sozinhas pelo scanner, não são "dado", são cache); a config global de
+ * Pomodoro (é uma preferência do app, não dado de projeto — só os overrides
+ * por card entram); e o conteúdo binário de anexos (metadados ficam de fora
+ * também nesta versão — ver aviso em backupService.ts).
+ */
+export interface BackupData {
+  groups: Group[]
+  boardColumns: BoardColumn[]
+  cards: Card[]
+  subtasks: Subtask[]
+  comments: Comment[]
+  cardRelations: CardRelation[]
+  statusHistory: StatusHistoryEntry[]
+  studySessions: StudySession[]
+  /** Só overrides por card (`cardId` sempre preenchido) — ver comentário acima. */
+  pomodoroConfigs: PomodoroConfig[]
+  pomodoros: Pomodoro[]
+  tags: Tag[]
+  cardTags: CardTagLink[]
+  notebooks: Notebook[]
+  notebookVersions: NotebookVersion[]
+}
+
+export interface BackupFile {
+  format: typeof BACKUP_FORMAT
+  version: number
+  createdAt: string
+  data: BackupData
+}
+
+/** Contagens devolvidas depois de uma importação bem-sucedida, para a mensagem de feedback. */
+export interface BackupImportSummary {
+  groups: number
+  cards: number
+}

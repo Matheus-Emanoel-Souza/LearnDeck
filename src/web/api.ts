@@ -59,9 +59,12 @@ import {
 import { createRelation, deleteRelation, listRelationsForCard } from '../main/repositories/cardRelationRepository'
 import { getDashboardSummary } from '../main/services/dashboardService'
 import { attachTagToCard, detachTagFromCard, listTagsForCard } from '../main/repositories/tagRepository'
+import { exportBackup, importBackup } from '../main/services/backupService'
 import type {
   AppNotification,
   Attachment,
+  BackupFile,
+  BackupImportSummary,
   BoardColumn,
   CalendarItem,
   Card,
@@ -237,6 +240,10 @@ export async function installWebApi(): Promise<void> {
     dashboard: {
       getSummary: async (workspaceId) => getDashboardSummary(await db(), workspaceId)
     },
+    backup: {
+      export: async (workspaceId) => exportBackup(await db(), workspaceId),
+      import: async (workspaceId, payload) => importBackup(await db(), workspaceId, payload)
+    },
     // Sem electron-updater fora do Electron — "atualizar" no build web é
     // comparar o build corrente com o publicado e recarregar. Ver updaterWeb.ts.
     updater: {
@@ -336,6 +343,10 @@ export interface WebApi {
     delete: (id: string) => Promise<void>
   }
   dashboard: { getSummary: (workspaceId: string) => Promise<DashboardSummary> }
+  backup: {
+    export: (workspaceId: string) => Promise<BackupFile>
+    import: (workspaceId: string, payload: unknown) => Promise<BackupImportSummary>
+  }
   updater: {
     getStatus: () => Promise<UpdateStatus>
     check: () => Promise<void>

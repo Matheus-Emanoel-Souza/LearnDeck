@@ -200,7 +200,7 @@ export default function App(): JSX.Element {
       )}
       {tab === 'settings' && (
         <div className="card-panel">
-          <Settings currentVersion={info.version} />
+          <Settings currentVersion={info.version} workspaceId={info.workspace.id} />
         </div>
       )}
 

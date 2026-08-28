@@ -4,6 +4,8 @@ import type { AppInfo } from '../main/ipc/app'
 import type {
   AppNotification,
   Attachment,
+  BackupFile,
+  BackupImportSummary,
   BoardColumn,
   CalendarItem,
   Card,
@@ -175,6 +177,11 @@ const api = {
   dashboard: {
     getSummary: (workspaceId: string): Promise<DashboardSummary> =>
       ipcRenderer.invoke('dashboard:getSummary', workspaceId)
+  },
+  backup: {
+    export: (workspaceId: string): Promise<BackupFile> => ipcRenderer.invoke('backup:export', workspaceId),
+    import: (workspaceId: string, payload: unknown): Promise<BackupImportSummary> =>
+      ipcRenderer.invoke('backup:import', workspaceId, payload)
   },
   updater: {
     getStatus: (): Promise<UpdateStatus> => ipcRenderer.invoke('updater:getStatus'),

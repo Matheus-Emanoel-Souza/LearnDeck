@@ -18,6 +18,7 @@ import { registerSubtasksIpc } from './ipc/subtasks'
 import { registerNotificationsIpc } from './ipc/notifications'
 import { registerCalendarIpc } from './ipc/calendar'
 import { registerNotebooksIpc } from './ipc/notebooks'
+import { registerBackupIpc } from './ipc/backup'
 import { registerUpdaterIpc } from './ipc/updater'
 import { initAutoUpdater } from './updater'
 import { ensureDefaultWorkspace } from './repositories/workspaceRepository'
@@ -103,6 +104,7 @@ app.whenReady().then(() => {
   registerNotificationsIpc(db)
   registerCalendarIpc(db)
   registerNotebooksIpc(db)
+  registerBackupIpc(db)
   registerUpdaterIpc()
   registerAttachmentProtocol(db)
 
