@@ -721,7 +721,6 @@ select {
     justify-content: stretch;
   }
 
-  .kanban-board__toolbar .new-card-form,
   .kanban-board__toolbar .new-card-form__trigger {
     width: 100%;
   }
@@ -963,11 +962,6 @@ select {
 .kanban-board__toolbar {
   display: flex;
   justify-content: flex-end;
-}
-
-.kanban-board__toolbar .new-card-form {
-  align-items: flex-end;
-  width: min(320px, 100%);
 }
 
 .kanban-board {

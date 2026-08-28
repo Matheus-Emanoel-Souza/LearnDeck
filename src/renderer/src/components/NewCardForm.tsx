@@ -13,9 +13,11 @@ interface NewCardFormProps {
 }
 
 /**
- * Ação global "+ Novo ticket" do quadro: abre o formulário com a coluna de
- * destino selecionável (auto-selecionada quando só existe uma). Continua
- * sendo o único ponto de criação de card — reaproveitado no header do board.
+ * Ação global "+ Novo ticket" do quadro: abre o formulário num modal central
+ * (fundo escurecido, mesmo padrão de ChartDataDialog/VersionHistoryPanel —
+ * ver `.modal-overlay`/`.modal-panel` em global.css), com a coluna de destino
+ * selecionável (auto-selecionada quando só existe uma). Continua sendo o
+ * único ponto de criação de card — reaproveitado no header do board.
  */
 export default function NewCardForm({ columns, onCreate }: NewCardFormProps): JSX.Element {
   const [open, setOpen] = useState(false)
@@ -30,6 +32,11 @@ export default function NewCardForm({ columns, onCreate }: NewCardFormProps): JS
     if (!columnId && columns.length > 0) setColumnId(columns[0].id)
   }, [columns, columnId])
 
+  function close(): void {
+    if (busy) return
+    setOpen(false)
+  }
+
   if (!open) {
     return (
       <button className="primary-button new-card-form__trigger" onClick={() => setOpen(true)} disabled={columns.length === 0}>
@@ -39,82 +46,86 @@ export default function NewCardForm({ columns, onCreate }: NewCardFormProps): JS
   }
 
   return (
-    <form
-      className="new-card-form"
-      onSubmit={async (e) => {
-        e.preventDefault()
-        if (!title.trim() || !columnId || busy) return
-        setBusy(true)
-        try {
-          await onCreate(
-            title,
-            description.trim() ? description : null,
-            dueDate || null,
-            dueDate && dueTime ? dueTime : null,
-            columnId
-          )
-          setTitle('')
-          setDescription('')
-          setDueDate('')
-          setDueTime('')
-          setOpen(false)
-        } finally {
-          setBusy(false)
-        }
-      }}
-    >
-      <input
-        autoFocus
-        placeholder="Título do ticket (ex.: Transformada de Laplace)"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        disabled={busy}
-      />
-      <textarea
-        placeholder="Descrição (opcional)"
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-        disabled={busy}
-        rows={3}
-      />
-      {columns.length > 1 && (
-        <select value={columnId} onChange={(e) => setColumnId(e.target.value)} disabled={busy} title="Coluna de destino">
-          {columns.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </select>
-      )}
-      <div className="new-card-form__due">
-        <input
-          type="date"
-          value={dueDate}
-          onChange={(e) => setDueDate(e.target.value)}
-          disabled={busy}
-          title="Prazo (opcional)"
-        />
-        <input
-          type="time"
-          value={dueTime}
-          onChange={(e) => setDueTime(e.target.value)}
-          disabled={busy || !dueDate}
-          title="Horário do prazo (opcional)"
-        />
+    <div className="modal-overlay" onClick={close}>
+      <div className="modal-panel" style={{ width: 'min(480px, 92vw)' }} onClick={(e) => e.stopPropagation()}>
+        <div className="modal-panel__header">
+          <h2>Novo ticket</h2>
+        </div>
+        <div className="modal-panel__body">
+          <form
+            className="new-card-form"
+            onSubmit={async (e) => {
+              e.preventDefault()
+              if (!title.trim() || !columnId || busy) return
+              setBusy(true)
+              try {
+                await onCreate(
+                  title,
+                  description.trim() ? description : null,
+                  dueDate || null,
+                  dueDate && dueTime ? dueTime : null,
+                  columnId
+                )
+                setTitle('')
+                setDescription('')
+                setDueDate('')
+                setDueTime('')
+                setOpen(false)
+              } finally {
+                setBusy(false)
+              }
+            }}
+          >
+            <input
+              autoFocus
+              placeholder="Título do ticket (ex.: Transformada de Laplace)"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              disabled={busy}
+            />
+            <textarea
+              placeholder="Descrição (opcional)"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              disabled={busy}
+              rows={3}
+            />
+            {columns.length > 1 && (
+              <select value={columnId} onChange={(e) => setColumnId(e.target.value)} disabled={busy} title="Coluna de destino">
+                {columns.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            )}
+            <div className="new-card-form__due">
+              <input
+                type="date"
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
+                disabled={busy}
+                title="Prazo (opcional)"
+              />
+              <input
+                type="time"
+                value={dueTime}
+                onChange={(e) => setDueTime(e.target.value)}
+                disabled={busy || !dueDate}
+                title="Horário do prazo (opcional)"
+              />
+            </div>
+            <div className="new-card-form__actions">
+              <button type="submit" className="primary-button" disabled={busy || !title.trim() || !columnId}>
+                Criar ticket
+              </button>
+              <button type="button" className="link-button" onClick={close} disabled={busy}>
+                Cancelar
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
-      <div className="new-card-form__actions">
-        <button type="submit" className="primary-button" disabled={busy || !title.trim() || !columnId}>
-          Criar ticket
-        </button>
-        <button
-          type="button"
-          className="link-button"
-          onClick={() => setOpen(false)}
-          disabled={busy}
-        >
-          Cancelar
-        </button>
-      </div>
-    </form>
+    </div>
   )
 }
