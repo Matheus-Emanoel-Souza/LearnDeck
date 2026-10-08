@@ -5,6 +5,9 @@ import { getDueStatus, DUE_STATUS_LABELS } from '../lib/dueStatus'
 interface CalendarPageProps {
   workspaceId: string
   onOpenCard: (cardId: string) => void
+  /** Muda a cada vez que um card em tela cheia é fechado — dispara reload
+   *  (o card pode ter ganhado/perdido prazo enquanto estava aberto). */
+  refreshSignal?: number
 }
 
 const WEEKDAY_LABELS = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb']
@@ -46,7 +49,7 @@ function buildMonthGrid(monthStart: Date, items: CalendarItem[]): Array<{ date: 
  * status (vencido/próximo/concluído/normal). Clique num item mostra os
  * detalhes e permite abrir o ticket direto.
  */
-export default function CalendarPage({ workspaceId, onOpenCard }: CalendarPageProps): JSX.Element {
+export default function CalendarPage({ workspaceId, onOpenCard, refreshSignal }: CalendarPageProps): JSX.Element {
   const [monthStart, setMonthStart] = useState(() => {
     const now = new Date()
     return new Date(now.getFullYear(), now.getMonth(), 1)
@@ -60,7 +63,7 @@ export default function CalendarPage({ workspaceId, onOpenCard }: CalendarPagePr
       .getItems(workspaceId)
       .then(setItems)
       .catch((err: unknown) => setError(err instanceof Error ? err.message : String(err)))
-  }, [workspaceId])
+  }, [workspaceId, refreshSignal])
 
   const grid = useMemo(() => buildMonthGrid(monthStart, items), [monthStart, items])
   const today = toIsoDate(new Date())

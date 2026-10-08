@@ -5,6 +5,8 @@ import { formatDateTime } from '../lib/formatDate'
 interface NotificationsPageProps {
   workspaceId: string
   onOpenCard: (cardId: string) => void
+  /** Muda a cada vez que um card em tela cheia é fechado — dispara reload. */
+  refreshSignal?: number
 }
 
 /**
@@ -12,7 +14,7 @@ interface NotificationsPageProps {
  * lida — nunca é apagado daqui, só marcado como lida). Mensagem, prazo que
  * gerou o alerta, quando foi gerada, lida/não lida e abrir o ticket.
  */
-export default function NotificationsPage({ workspaceId, onOpenCard }: NotificationsPageProps): JSX.Element {
+export default function NotificationsPage({ workspaceId, onOpenCard, refreshSignal }: NotificationsPageProps): JSX.Element {
   const [notifications, setNotifications] = useState<AppNotification[]>([])
   const [error, setError] = useState<string | null>(null)
 
@@ -26,7 +28,7 @@ export default function NotificationsPage({ workspaceId, onOpenCard }: Notificat
   useEffect(() => {
     window.api.notifications.scanNow(workspaceId).finally(reload)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [workspaceId])
+  }, [workspaceId, refreshSignal])
 
   const unreadCount = notifications.filter((n) => !n.isRead).length
 

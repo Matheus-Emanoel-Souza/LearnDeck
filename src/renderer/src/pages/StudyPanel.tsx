@@ -6,27 +6,36 @@ import { reorderCards } from '../lib/kanban'
 import GroupSidebar from '../components/GroupSidebar'
 import KanbanBoard from '../components/KanbanBoard'
 import type { CardActionId } from '../components/CardActionsMenu'
-import CardDetailPage, { type CardDetailFocus } from './CardDetailPage'
+import type { CardDetailFocus } from './CardDetailPage'
 import { useIsNarrow } from '../lib/useIsNarrow'
 
 interface StudyPanelProps {
   workspaceId: string
+  /** Abre o card em tela cheia — estado vive no App.tsx, único pra qualquer
+   *  origem (clique no Kanban, menu ⋮, card relacionado). */
+  onOpenCard: (card: Card, focus: CardDetailFocus | null) => void
+  onOpenCardById: (cardId: string, focus: CardDetailFocus | null) => void
+  /** Muda a cada fechamento do card em tela cheia — recarrega o quadro
+   *  (coluna/posição podem ter mudado) sem perder a matéria selecionada. */
+  refreshSignal?: number
 }
 
 /**
  * Painel inicial: grupos (matérias/projetos) na lateral, quadro Kanban do
  * grupo selecionado no centro. Ver docs/roadmap.md (Fase 2).
  */
-export default function StudyPanel({ workspaceId }: StudyPanelProps): JSX.Element {
+export default function StudyPanel({
+  workspaceId,
+  onOpenCard,
+  onOpenCardById,
+  refreshSignal
+}: StudyPanelProps): JSX.Element {
   const [groups, setGroups] = useState<Group[]>([])
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null)
   const [cards, setCards] = useState<Card[]>([])
   const [columns, setColumns] = useState<BoardColumn[]>([])
   const [loadingCards, setLoadingCards] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [viewingCard, setViewingCard] = useState<Card | null>(null)
-  const [viewingColumns, setViewingColumns] = useState<BoardColumn[]>([])
-  const [viewingCardFocus, setViewingCardFocus] = useState<CardDetailFocus | null>(null)
   const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(loadSidebarCollapsed)
   const isNarrow = useIsNarrow()
 
@@ -82,19 +91,13 @@ export default function StudyPanel({ workspaceId }: StudyPanelProps): JSX.Elemen
     )
   }, [selectedGroupId, reloadCards, reloadColumns])
 
-  /** Abre um card em tela cheia com as colunas da matéria DELE — que pode não
-   * ser a matéria selecionada na lateral (ex.: card relacionado de outra
-   * matéria, aberto pelo Calendário/Notificações ou por "Relações"). */
-  async function openCard(card: Card, focus: CardDetailFocus | null): Promise<void> {
-    try {
-      const cols = await window.api.boardColumns.list(card.groupId)
-      setViewingColumns(cols)
-      setViewingCardFocus(focus)
-      setViewingCard(card)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : String(err))
-    }
-  }
+  // Card em tela cheia fechado (App.tsx) — a coluna/posição do card pode ter
+  // mudado lá dentro, recarrega o quadro da matéria atual.
+  useEffect(() => {
+    if (!selectedGroupId) return
+    reloadCards(selectedGroupId).catch((err: unknown) => setError(err instanceof Error ? err.message : String(err)))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refreshSignal])
 
   async function handleCreateGroup(name: string, parentGroupId: string | null): Promise<void> {
     try {
@@ -222,15 +225,6 @@ export default function StudyPanel({ workspaceId }: StudyPanelProps): JSX.Elemen
     }
   }
 
-  async function handleNavigateToCard(cardId: string): Promise<void> {
-    try {
-      const target = await window.api.cards.get(cardId)
-      if (target) await openCard(target, null)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : String(err))
-    }
-  }
-
   /**
    * Menu de ações (⋮) do card no Kanban. As 4 opções não são funcionalidades
    * novas — cada uma abre o card já na seção correspondente da tela de
@@ -241,7 +235,7 @@ export default function StudyPanel({ workspaceId }: StudyPanelProps): JSX.Elemen
       try {
         const relations = await window.api.relations.listByCard(card.id)
         if (relations.length === 1) {
-          await handleNavigateToCard(relations[0].card.id)
+          onOpenCardById(relations[0].card.id, null)
           return
         }
       } catch (err) {
@@ -249,47 +243,15 @@ export default function StudyPanel({ workspaceId }: StudyPanelProps): JSX.Elemen
         return
       }
       // Nenhuma ou mais de uma relação: abre o card e deixa a pessoa escolher.
-      await openCard(card, 'relations')
+      onOpenCard(card, 'relations')
       return
     }
 
     const focus: CardDetailFocus = action === 'apontamento' ? 'timer' : action === 'comunicacao' ? 'comment' : 'relations'
-    await openCard(card, focus)
-  }
-
-  function handleBackFromCard(): void {
-    setViewingCard(null)
-    setViewingCardFocus(null)
-    // O card pode ter mudado de coluna/posição, ou a relação pode ter sido
-    // editada; recarrega do banco em vez de tentar reconciliar em memória.
-    if (selectedGroupId) reloadCards(selectedGroupId).catch(() => undefined)
-  }
-
-  async function handleDeleteCard(cardId: string): Promise<void> {
-    try {
-      await window.api.cards.delete(cardId)
-      handleBackFromCard()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : String(err))
-      throw err
-    }
+    onOpenCard(card, focus)
   }
 
   const selectedGroup = groups.find((g) => g.id === selectedGroupId) ?? null
-
-  if (viewingCard) {
-    return (
-      <CardDetailPage
-        card={viewingCard}
-        workspaceId={workspaceId}
-        columns={viewingColumns}
-        onBack={handleBackFromCard}
-        onNavigateToCard={(cardId) => void handleNavigateToCard(cardId)}
-        onDelete={handleDeleteCard}
-        initialFocus={viewingCardFocus}
-      />
-    )
-  }
 
   const board = (
     <>
@@ -301,7 +263,7 @@ export default function StudyPanel({ workspaceId }: StudyPanelProps): JSX.Elemen
           columns={columns}
           onMoveCard={handleMoveCard}
           onCreateCard={handleCreateCard}
-          onOpenCard={(card) => void openCard(card, null)}
+          onOpenCard={(card) => onOpenCard(card, null)}
           onCardAction={(card, action) => void handleCardAction(card, action)}
           onCreateColumn={handleCreateColumn}
           onRenameColumn={handleRenameColumn}
@@ -372,8 +334,15 @@ export default function StudyPanel({ workspaceId }: StudyPanelProps): JSX.Elemen
       <section className="card-panel">
         {error && <p className="status status--error">{error}</p>}
 
-        {!selectedGroup && (
-          <p className="empty-hint">Selecione um grupo à esquerda (ou crie um) para ver o quadro.</p>
+        {!selectedGroup && groups.length === 0 && (
+          <div className="empty-hint empty-hint--guide">
+            <p><strong>1.</strong> Crie uma matéria (ou projeto) na barra à esquerda.</p>
+            <p><strong>2.</strong> O quadro dela já nasce com uma coluna padrão — crie mais pelo botão direito no cabeçalho, se quiser.</p>
+            <p><strong>3.</strong> Adicione cards de estudo na coluna desejada.</p>
+          </div>
+        )}
+        {!selectedGroup && groups.length > 0 && (
+          <p className="empty-hint">Selecione uma matéria à esquerda para ver o quadro.</p>
         )}
 
         {selectedGroup && (

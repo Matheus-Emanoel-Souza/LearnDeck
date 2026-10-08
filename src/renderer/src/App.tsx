@@ -7,7 +7,7 @@ import CalendarPage from './pages/CalendarPage'
 import NotificationsPage from './pages/NotificationsPage'
 import UpdatesPage from './pages/UpdatesPage'
 import Settings from './pages/Settings'
-import CardDetailPage from './pages/CardDetailPage'
+import CardDetailPage, { type CardDetailFocus } from './pages/CardDetailPage'
 import NotificationBell from './components/NotificationBell'
 import ThemeToggle from './components/ThemeToggle'
 import { useIsNarrow } from './lib/useIsNarrow'
@@ -48,12 +48,14 @@ export default function App(): JSX.Element {
     [tab, isSecondaryTab]
   )
 
-  // Card aberto "globalmente" — Calendário e Notificações vivem fora do
-  // StudyPanel, então pra abrir um ticket a partir delas o overlay do card
-  // fica aqui em cima, por cima de qualquer aba (o board continua com sua
-  // própria navegação interna pro clique direto no Kanban).
-  const [globalCard, setGlobalCard] = useState<Card | null>(null)
-  const [globalColumns, setGlobalColumns] = useState<BoardColumn[]>([])
+  // Card aberto em tela cheia — único estado pra qualquer origem (Quadro,
+  // Calendário, Notificações, card relacionado). Fica aqui no topo, por
+  // cima de qualquer aba, pra "voltar" ser sempre consistente e sabermos de
+  // onde veio (breadcrumb no botão de voltar, ver `origin`).
+  const [activeCard, setActiveCard] = useState<Card | null>(null)
+  const [activeColumns, setActiveColumns] = useState<BoardColumn[]>([])
+  const [activeFocus, setActiveFocus] = useState<CardDetailFocus | null>(null)
+  const [origin, setOrigin] = useState<{ label: string } | null>(null)
 
   useEffect(() => {
     window.api.app
@@ -62,21 +64,44 @@ export default function App(): JSX.Element {
       .catch((err: unknown) => setError(err instanceof Error ? err.message : String(err)))
   }, [])
 
-  const openCardGlobally = useCallback((cardId: string) => {
-    if (!info) return
-    // Colunas são por matéria agora — só dá pra saber quais depois de ter o
-    // card em mãos (ele pode ser de uma matéria diferente da que está aberta).
-    window.api.cards
-      .get(cardId)
-      .then(async (card) => {
-        if (!card) return
-        const columns = await window.api.boardColumns.list(card.groupId)
-        setGlobalColumns(columns)
-        setGlobalCard(card)
-      })
-      .catch(() => undefined)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [info])
+  const openCard = useCallback(
+    (card: Card, focus: CardDetailFocus | null, originLabel: string | null) => {
+      window.api.boardColumns
+        .list(card.groupId)
+        .then((columns) => {
+          setActiveColumns(columns)
+          setActiveFocus(focus)
+          setOrigin(originLabel ? { label: originLabel } : null)
+          setActiveCard(card)
+        })
+        .catch(() => undefined)
+    },
+    []
+  )
+
+  const openCardById = useCallback(
+    (cardId: string, focus: CardDetailFocus | null, originLabel: string | null) => {
+      window.api.cards
+        .get(cardId)
+        .then((card) => {
+          if (card) openCard(card, focus, originLabel)
+        })
+        .catch(() => undefined)
+    },
+    [openCard]
+  )
+
+  // Incrementa a cada fechamento — páginas que ficam montadas por baixo do
+  // overlay (Quadro, Calendário, Notificações) usam isso pra recarregar seus
+  // dados sem perder o próprio estado (matéria selecionada, mês do calendário).
+  const [closeSignal, setCloseSignal] = useState(0)
+
+  function closeCard(): void {
+    setActiveCard(null)
+    setActiveFocus(null)
+    setOrigin(null)
+    setCloseSignal((v) => v + 1)
+  }
 
   if (error) {
     return (
@@ -93,24 +118,6 @@ export default function App(): JSX.Element {
         <h1>LearnDeck</h1>
         <p className="status">Conectando ao banco local…</p>
       </main>
-    )
-  }
-
-  if (globalCard) {
-    return (
-      <div className="app-root">
-        <CardDetailPage
-          card={globalCard}
-          workspaceId={info.workspace.id}
-          columns={globalColumns}
-          onBack={() => setGlobalCard(null)}
-          onNavigateToCard={openCardGlobally}
-          onDelete={async (cardId) => {
-            await window.api.cards.delete(cardId)
-            setGlobalCard(null)
-          }}
-        />
-      </div>
     )
   }
 
@@ -177,7 +184,14 @@ export default function App(): JSX.Element {
         )}
         <ThemeToggle />
       </header>
-      {tab === 'board' && <StudyPanel workspaceId={info.workspace.id} />}
+      {tab === 'board' && (
+        <StudyPanel
+          workspaceId={info.workspace.id}
+          onOpenCard={(card, focus) => openCard(card, focus, null)}
+          onOpenCardById={(cardId, focus) => openCardById(cardId, focus, 'Quadro')}
+          refreshSignal={closeSignal}
+        />
+      )}
       {tab === 'dashboard' && (
         <div className="card-panel">
           <Dashboard workspaceId={info.workspace.id} />
@@ -185,12 +199,20 @@ export default function App(): JSX.Element {
       )}
       {tab === 'calendar' && (
         <div className="card-panel">
-          <CalendarPage workspaceId={info.workspace.id} onOpenCard={openCardGlobally} />
+          <CalendarPage
+            workspaceId={info.workspace.id}
+            onOpenCard={(cardId) => openCardById(cardId, null, 'Calendário')}
+            refreshSignal={closeSignal}
+          />
         </div>
       )}
       {tab === 'notifications' && (
         <div className="card-panel">
-          <NotificationsPage workspaceId={info.workspace.id} onOpenCard={openCardGlobally} />
+          <NotificationsPage
+            workspaceId={info.workspace.id}
+            onOpenCard={(cardId) => openCardById(cardId, null, 'Notificações')}
+            refreshSignal={closeSignal}
+          />
         </div>
       )}
       {tab === 'updates' && (
@@ -221,6 +243,24 @@ export default function App(): JSX.Element {
             </button>
           ))}
         </nav>
+      )}
+
+      {activeCard && (
+        <div className="app-root app-root--overlay">
+          <CardDetailPage
+            card={activeCard}
+            workspaceId={info.workspace.id}
+            columns={activeColumns}
+            onBack={closeCard}
+            backLabel={origin?.label ?? null}
+            onNavigateToCard={(cardId) => openCardById(cardId, null, origin?.label ?? null)}
+            onDelete={async (cardId) => {
+              await window.api.cards.delete(cardId)
+              closeCard()
+            }}
+            initialFocus={activeFocus}
+          />
+        </div>
       )}
     </div>
   )

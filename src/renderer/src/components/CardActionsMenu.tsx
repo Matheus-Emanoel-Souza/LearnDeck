@@ -32,7 +32,7 @@ const ACTIONS: Array<{ id: CardActionId; label: string; icon: JSX.Element }> = [
   },
   {
     id: 'agrupar',
-    label: 'Agrupar ticket',
+    label: 'Relacionar card',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
         <path
@@ -46,7 +46,7 @@ const ACTIONS: Array<{ id: CardActionId; label: string; icon: JSX.Element }> = [
   },
   {
     id: 'filho',
-    label: 'Abrir ticket filho',
+    label: 'Abrir card vinculado',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
         <path d="M7 4v9a3 3 0 0 0 3 3h7" strokeLinecap="round" strokeLinejoin="round" />

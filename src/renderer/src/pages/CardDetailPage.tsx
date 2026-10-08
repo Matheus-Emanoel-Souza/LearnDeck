@@ -36,6 +36,9 @@ interface CardDetailPageProps {
   /** Seção pra rolar até e focar ao abrir — usada pelo menu de ações do card
    *  do Kanban (⋮), que só atalha pra uma seção que já existe aqui embaixo. */
   initialFocus?: CardDetailFocus | null
+  /** De onde o card foi aberto (Calendário/Notificações/Quadro) — vira o
+   *  texto do botão de voltar, pra não dar a sensação de "me perdi". */
+  backLabel?: string | null
 }
 
 /**
@@ -51,7 +54,8 @@ export default function CardDetailPage({
   onBack,
   onNavigateToCard,
   onDelete,
-  initialFocus
+  initialFocus,
+  backLabel
 }: CardDetailPageProps): JSX.Element {
   const [activeTab, setActiveTab] = useState<'details' | 'notebook'>('details')
   const [card, setCard] = useState(initialCard)
@@ -264,7 +268,7 @@ export default function CardDetailPage({
     <div className="card-page">
       <header className="card-page__header">
         <button className="secondary-button card-page__back" onClick={onBack}>
-          ← Voltar ao quadro
+          ← Voltar para {backLabel ?? 'o quadro'}
         </button>
         <div className="card-page__heading">
           <div className="card-page__title-row">
@@ -461,11 +465,13 @@ export default function CardDetailPage({
 
           <section className="card-section" ref={timerSectionRef}>
             <h3>Cronômetro</h3>
+            <p className="card-section__hint">Sessão livre, sem pausas — conta o tempo até você parar.</p>
             <CardTimer card={card} onCardUpdated={setCard} onSessionsChanged={reloadSessions} />
           </section>
 
           <section className="card-section">
             <h3>Pomodoro</h3>
+            <p className="card-section__hint">Ciclos com pausa programada (foco/pausa curta/pausa longa).</p>
             <CardPomodoro card={card} onCardUpdated={setCard} onSessionsChanged={reloadSessions} />
           </section>
 

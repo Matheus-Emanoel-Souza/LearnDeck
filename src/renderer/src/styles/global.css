@@ -159,6 +159,15 @@ select {
   flex-direction: column;
 }
 
+/* Card em tela cheia por cima da aba atual (Quadro/Calendário/Notificações),
+   sem desmontá-la — preserva matéria selecionada, mês do calendário etc. */
+.app-root--overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  background: var(--bg);
+}
+
 .app-header {
   display: flex;
   align-items: baseline;
@@ -904,6 +913,17 @@ select {
   font-size: 0.85rem;
 }
 
+.empty-hint--guide {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  max-width: 32rem;
+}
+
+.empty-hint--guide p {
+  margin: 0;
+}
+
 /* ---- Painel de cards ---- */
 
 .card-panel {
@@ -1248,6 +1268,12 @@ select {
   letter-spacing: 0.03em;
   color: var(--text-muted);
   font-weight: 700;
+}
+
+.card-section__hint {
+  margin: -0.3rem 0 0.7rem;
+  font-size: 0.78rem;
+  color: var(--text-muted);
 }
 
 .card-section select {
